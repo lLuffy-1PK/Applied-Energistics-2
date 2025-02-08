@@ -673,3 +673,13 @@ key.open_wireless_terminal.desc=Открыть беспроводной терм
 key.open_wireless_crafting_terminal.desc=Открыть беспроводной терминал изготовления
 key.open_wireless_pattern_terminal.desc=Открыть беспроводной терминал шаблонов
 key.open_wireless_fluid_terminal.desc=Открыть беспроводной жидкостный терминал
+
+# Переводы для PerfTracker
+perftracker.reset=Трекер производительности сброшен.
+perftracker.usage=Использование: /ae2 PerfTracker [reset]
+perftracker.collecting=Собираются данные за 1 минуту по всем AE-сетям... (Всего сетей: %s)
+perftracker.network=Местоположение сети (центр): %s, количество узлов: %s
+perftracker.owner.unknown=Владелец: неизвестен (ID игрока: %s)
+perftracker.owner=Владелец: %s (UUID: %s)
+perftracker.tick.avg=Среднее время тика: %sms
+perftracker.tick.max=Максимальное время тика: %sms

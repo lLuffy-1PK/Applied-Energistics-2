@@ -698,3 +698,13 @@ key.open_wireless_terminal.desc=Open Wireless Terminal
 key.open_wireless_crafting_terminal.desc=Open Wireless Crafting Terminal
 key.open_wireless_pattern_terminal.desc=Open Wireless Pattern Terminal
 key.open_wireless_fluid_terminal.desc=Open Wireless Fluid Terminal
+
+# English translations for PerfTracker
+perftracker.reset=Performance tracker has been reset.
+perftracker.usage=Usage: /ae2 PerfTracker [reset]
+perftracker.collecting=Collecting data for all AE networks in the last minute... (Total networks: %s)
+perftracker.network=Network location (center): %s, number of nodes: %s
+perftracker.owner.unknown=Owner: Unknown (Player ID: %s)
+perftracker.owner=Owner: %s (UUID: %s)
+perftracker.tick.avg=Average tick time: %sms
+perftracker.tick.max=Maximum tick time: %sms
