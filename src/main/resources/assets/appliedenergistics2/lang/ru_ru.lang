@@ -683,3 +683,4 @@ perftracker.owner.unknown=Владелец: неизвестен (ID игрок�
 perftracker.owner=Владелец: %s (UUID: %s)
 perftracker.tick.avg=Среднее время тика: %sms
 perftracker.tick.max=Максимальное время тика: %sms
+perftracker.network.teleport=Нажмите для телепортации

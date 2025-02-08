@@ -708,3 +708,4 @@ perftracker.owner.unknown=Owner: Unknown (Player ID: %s)
 perftracker.owner=Owner: %s (UUID: %s)
 perftracker.tick.avg=Average tick time: %sms
 perftracker.tick.max=Maximum tick time: %sms
+perftracker.network.teleport=Click to teleport

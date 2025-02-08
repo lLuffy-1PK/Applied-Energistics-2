@@ -709,3 +709,4 @@ perftracker.owner.unknown=所有者：未知 (玩家 ID: %s)
 perftracker.owner=所有者：%s (UUID: %s)
 perftracker.tick.avg=平均 Tick 时间：%sms
 perftracker.tick.max=最大 Tick 时间：%sms
+perftracker.network.teleport=点击传送

@@ -10,9 +10,13 @@ import appeng.server.tracker.Tracker;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.text.Style;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextComponentTranslation;
+import net.minecraft.util.text.event.ClickEvent;
+import net.minecraft.util.text.event.HoverEvent;
 
+import java.util.Comparator;
 import java.util.Map;
 
 public class PerfTracker implements ISubCommand {
@@ -39,7 +43,7 @@ public class PerfTracker implements ISubCommand {
 
         trackerMap.values().stream()
                 .filter(t -> !t.getGrid().isEmpty())
-                .sorted((o1, o2) -> Integer.compare(o2.getTimeUsageAvg(), o1.getTimeUsageAvg()))
+                .sorted(Comparator.comparingInt(Tracker::getTimeUsageAvg).reversed())
                 .limit(10)
                 .forEach(t -> sendTrackerTimeUsage(t, sender));
     }
@@ -53,7 +57,11 @@ public class PerfTracker implements ISubCommand {
         EntityPlayer player = AEApi.instance().registries().players().findPlayer(playerID);
         int gridSize = grid.getNodes().size();
 
-        sender.sendMessage(new TextComponentTranslation("perftracker.network", location, gridSize));
+        String tpCommand = String.format("/tp %d %d %d", location.x, location.y, location.z);
+        Style style = new Style();
+        style.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, tpCommand));
+        style.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TextComponentTranslation("perftracker.network.teleport")));
+        sender.sendMessage(new TextComponentTranslation("perftracker.network", location, gridSize).setStyle(style));
 
         if (player == null) {
             sender.sendMessage(new TextComponentTranslation("perftracker.owner.unknown", playerID));
