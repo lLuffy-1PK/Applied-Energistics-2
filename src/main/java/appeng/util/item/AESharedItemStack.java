@@ -22,17 +22,12 @@ import com.google.common.base.Preconditions;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 
-import java.util.Objects;
-import java.util.concurrent.atomic.AtomicInteger;
-
 
 final class AESharedItemStack {
 
     private final ItemStack itemStack;
     private final int itemDamage;
     private final int hashCode;
-
-    private final AtomicInteger referenceCount = new AtomicInteger();
 
     public AESharedItemStack(final ItemStack itemStack) {
         this(itemStack, itemStack.getItemDamage());
@@ -50,17 +45,6 @@ final class AESharedItemStack {
 
         // Ensure this is always called last.
         this.hashCode = this.makeHashCode();
-    }
-
-    AESharedItemStack incrementReferenceCount() {
-        this.referenceCount.decrementAndGet();
-        return this;
-    }
-
-    void decrementReferenceCount() {
-        if (this.referenceCount.decrementAndGet() <= 0) {
-            AEItemStackRegistry.unregisterStack(this);
-        }
     }
 
     ItemStack getDefinition() {
@@ -94,14 +78,12 @@ final class AESharedItemStack {
         return stackEquals(this.itemStack, other.itemStack);
     }
 
-    private static boolean stackEquals(ItemStack stackA, ItemStack stackB) {
+    public static boolean stackEquals(ItemStack stackA, ItemStack stackB) {
         if (stackA.isEmpty() && stackB.isEmpty()) {
             return true;
         } else if (stackA.isEmpty() && !stackB.isEmpty()) {
             return false;
         } else if (stackA.getItem() != stackB.getItem()) {
-            return false;
-        } else if (stackA.getItemDamage() != stackB.getItemDamage()) {
             return false;
         }
 

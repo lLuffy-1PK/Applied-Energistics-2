@@ -24,8 +24,12 @@ import appeng.api.config.PowerMultiplier;
 import appeng.api.implementations.guiobjects.IPortableCell;
 import appeng.container.interfaces.IInventorySlotAware;
 import appeng.util.inv.IAEAppEngInventory;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
+import net.minecraft.inventory.ClickType;
 import net.minecraft.item.ItemStack;
+
+import javax.annotation.Nonnull;
 
 
 public class ContainerMEPortableCell extends ContainerMEMonitorable implements IInventorySlotAware {
@@ -72,6 +76,22 @@ public class ContainerMEPortableCell extends ContainerMEMonitorable implements I
             this.ticks = 0;
         }
         super.detectAndSendChanges();
+    }
+
+    @Nonnull
+    @Override
+    public ItemStack slotClick(int slotIndex, int mouseButton, @Nonnull ClickType modifier, @Nonnull EntityPlayer player) {
+        if (modifier == ClickType.SWAP && mouseButton >= 0 && mouseButton < 9) {
+            return ItemStack.EMPTY;
+        }
+        return super.slotClick(slotIndex, mouseButton, modifier, player);
+    }
+
+    @Override
+    protected boolean mergeItemStack(@Nonnull ItemStack stack, int startIndex, int endIndex, boolean reverseDirection) {
+        ItemStack currentItem = this.slot < 0 ? this.getPlayerInv().getCurrentItem() : this.getPlayerInv().getStackInSlot(this.slot);
+
+        return !ItemStack.areItemStacksEqual(stack, currentItem);
     }
 
     private double getPowerMultiplier() {

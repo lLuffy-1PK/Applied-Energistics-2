@@ -41,6 +41,7 @@ import appeng.me.helpers.GenericInterestManager;
 import appeng.me.helpers.MachineSource;
 import appeng.me.storage.ItemWatcher;
 import appeng.me.storage.NetworkInventoryHandler;
+import appeng.server.tracker.PerformanceTracker;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.SetMultimap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
@@ -74,7 +75,9 @@ public class GridStorageCache implements IStorageGrid {
 
     @Override
     public void onUpdateTick() {
-        this.storageMonitors.forEach((channel, monitor) -> monitor.onTick());
+        PerformanceTracker.INSTANCE.startSubTracking("Storage");
+        this.storageMonitors.values().forEach(NetworkMonitor::onTick);
+        PerformanceTracker.INSTANCE.endSubTracking();
     }
 
     @Override

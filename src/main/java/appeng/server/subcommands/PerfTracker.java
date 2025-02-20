@@ -1,6 +1,7 @@
 package appeng.server.subcommands;
 
 import appeng.api.AEApi;
+import appeng.api.networking.IGrid;
 import appeng.api.networking.IGridNode;
 import appeng.api.util.DimensionalCoord;
 import appeng.me.Grid;
@@ -37,7 +38,7 @@ public class PerfTracker implements ISubCommand {
             }
             return;
         }
-        Map<Grid, Tracker> trackerMap = PerformanceTracker.INSTANCE.getTrackers();
+        Map<IGrid, Tracker> trackerMap = PerformanceTracker.INSTANCE.getTrackers();
 
         sender.sendMessage(new TextComponentTranslation("perftracker.collecting", trackerMap.size()));
 
@@ -49,7 +50,7 @@ public class PerfTracker implements ISubCommand {
     }
 
     public static void sendTrackerTimeUsage(final Tracker tracker, final ICommandSender sender) {
-        Grid grid = tracker.getGrid();
+        IGrid grid = tracker.getGrid();
 
         IGridNode pivot = grid.getPivot();
         DimensionalCoord location = pivot.getGridBlock().getLocation();

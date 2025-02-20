@@ -23,42 +23,35 @@
 
 package appeng.util.item;
 
-import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.item.ItemStack;
 
 import javax.annotation.Nonnull;
+import java.lang.ref.WeakReference;
+import java.util.WeakHashMap;
 
 public final class AEItemStackRegistry {
-
-    private static final ObjectOpenHashSet<AESharedItemStack> REGISTRY = new ObjectOpenHashSet<>();
+    private static final WeakHashMap<AESharedItemStack, WeakReference<AESharedItemStack>> REGISTRY = new WeakHashMap<>();
 
     private AEItemStackRegistry() {
     }
 
-    static synchronized AESharedItemStack getRegisteredStack(@Nonnull final ItemStack stack) {
-        if (stack.isEmpty()) {
+    static synchronized AESharedItemStack getRegisteredStack(@Nonnull ItemStack itemStack) {
+        if (itemStack.isEmpty()) {
             throw new IllegalArgumentException("stack cannot be empty");
+        } else {
+            int oldStackSize = itemStack.getCount();
+            itemStack.setCount(1);
+            AESharedItemStack search = new AESharedItemStack(itemStack);
+            WeakReference<AESharedItemStack> weak = REGISTRY.get(search);
+            AESharedItemStack ret = (weak != null) ? weak.get() : null;
+
+            if (ret == null) {
+                ret = new AESharedItemStack(itemStack.copy());
+                REGISTRY.put(ret, new WeakReference<>(ret));
+            }
+
+            itemStack.setCount(oldStackSize);
+            return ret;
         }
-
-        final int stackSize = stack.getCount();
-        stack.setCount(1);
-
-        AESharedItemStack ret = REGISTRY.get(new AESharedItemStack(stack));
-
-        if (ret != null) {
-            stack.setCount(stackSize);
-            return ret.incrementReferenceCount();
-        }
-
-        ret = new AESharedItemStack(stack.copy());
-        stack.setCount(stackSize);
-
-        REGISTRY.add(ret);
-        return ret.incrementReferenceCount();
     }
-
-    static synchronized void unregisterStack(@Nonnull final AESharedItemStack stack) {
-        REGISTRY.remove(stack);
-    }
-
 }

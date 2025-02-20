@@ -29,65 +29,64 @@ import net.minecraft.util.math.BlockPos;
 
 public class ControllerValidator implements IGridVisitor {
 
-    private boolean isValid = true;
+    private boolean valid = true;
     private int found = 0;
-    private int minX;
-    private int minY;
-    private int minZ;
-    private int maxX;
-    private int maxY;
-    private int maxZ;
+    private int minX, minY, minZ;
+    private int maxX, maxY, maxZ;
 
-    public ControllerValidator(final int x, final int y, final int z) {
-        this.minX = x;
-        this.maxX = x;
-        this.minY = y;
-        this.maxY = y;
-        this.minZ = z;
-        this.maxZ = z;
+    private final int maxSizeX;
+    private final int maxSizeY;
+    private final int maxSizeZ;
+
+    public ControllerValidator(int x, int y, int z) {
+        this.minX = this.maxX = x;
+        this.minY = this.maxY = y;
+        this.minZ = this.maxZ = z;
+        maxSizeX = AEConfig.instance().getMaxControllerSizeX();
+        maxSizeY = AEConfig.instance().getMaxControllerSizeY();
+        maxSizeZ = AEConfig.instance().getMaxControllerSizeZ();
     }
 
     @Override
-    public boolean visitNode(final IGridNode n) {
-        final IGridHost host = n.getMachine();
-        if (this.isValid() && host instanceof TileController) {
-            final TileController c = (TileController) host;
+    public boolean visitNode(final IGridNode node) {
+        if (!valid) return false;
 
-            final BlockPos pos = c.getPos();
+        IGridHost host = node.getMachine();
+        if (!(host instanceof TileController)) return false;
 
-            this.minX = Math.min(pos.getX(), this.minX);
-            this.maxX = Math.max(pos.getX(), this.maxX);
-            this.minY = Math.min(pos.getY(), this.minY);
-            this.maxY = Math.max(pos.getY(), this.maxY);
-            this.minZ = Math.min(pos.getZ(), this.minZ);
-            this.maxZ = Math.max(pos.getZ(), this.maxZ);
+        TileController controller = (TileController) host;
+        updateBounds(controller.getPos());
 
-            if (this.maxX - this.minX < AEConfig.instance().getMaxControllerSizeX() && this.maxY - this.minY < AEConfig.instance().getMaxControllerSizeY() && this.maxZ - this.minZ < AEConfig.instance().getMaxControllerSizeZ()) {
-                this.setFound(this.getFound() + 1);
-                return true;
-            }
-
-            this.setValid(false);
-        } else {
+        if (!isWithinBounds()) {
+            valid = false;
             return false;
         }
+        found++;
+        return true;
+    }
 
-        return this.isValid();
+    private void updateBounds(BlockPos pos) {
+        int x = pos.getX(), y = pos.getY(), z = pos.getZ();
+        minX = Math.min(x, minX);
+        maxX = Math.max(x, maxX);
+        minY = Math.min(y, minY);
+        maxY = Math.max(y, maxY);
+        minZ = Math.min(z, minZ);
+        maxZ = Math.max(z, maxZ);
+    }
+
+    private boolean isWithinBounds() {
+        return (maxX - minX < maxSizeX) &&
+                (maxY - minY < maxSizeY) &&
+                (maxZ - minZ < maxSizeZ);
     }
 
     public boolean isValid() {
-        return this.isValid;
-    }
-
-    private void setValid(final boolean isValid) {
-        this.isValid = isValid;
+        return valid;
     }
 
     public int getFound() {
-        return this.found;
-    }
-
-    private void setFound(final int found) {
-        this.found = found;
+        return found;
     }
 }
+

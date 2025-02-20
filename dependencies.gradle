@@ -29,6 +29,7 @@ dependencies {
     implementation rfg.deobf("curse.maven:baubles-227083:2518667") // Baubles
     implementation rfg.deobf("curse.maven:industrial-craft-242638:2547175") // IC2
     implementation rfg.deobf("curse.maven:forestry-59751:2684780") // Forestry
+    implementation group: 'org.jetbrains', name: 'annotations', version: '23.0.0'
 
     // Mods only in code by default
     compileOnly "curse.maven:chisel-235279:2915375"

@@ -225,7 +225,7 @@ public class EnergyGridCache implements IEnergyGrid {
             visited.add(next);
 
             extracted += next.extractProviderPower(toExtract - extracted, mode);
-            if (extracted > toExtract) {
+            if (extracted >= toExtract) {
                 break;
             }
 
@@ -270,66 +270,65 @@ public class EnergyGridCache implements IEnergyGrid {
         return this.energyGridProviders;
     }
 
-    @Override
-    public double extractProviderPower(final double amt, final Actionable mode) {
-        double extractedPower = 0;
+    public double extractProviderPower(double amount, Actionable mode) {
+        double extractedPower = 0.0;
 
-        if (!providerToRemove.isEmpty()) {
-            for (final IAEPowerStorage storage : providerToRemove) {
-                this.providers.remove(storage);
-            }
+        // Удаляем провайдеров, помеченных на удаление
+        if (!this.providerToRemove.isEmpty()) {
+            this.providers.removeAll(this.providerToRemove);
             this.providerToRemove.clear();
         }
-        if (!providersToAdd.isEmpty()) {
-            this.providers.addAll(providersToAdd);
+
+        // Добавляем новых провайдеров
+        if (!this.providersToAdd.isEmpty()) {
+            this.providers.addAll(this.providersToAdd);
             this.providersToAdd.clear();
         }
 
-        final Iterator<IAEPowerStorage> it = this.providers.iterator();
+        Iterator<IAEPowerStorage> iterator = this.providers.iterator();
+        this.ongoingExtractOperation = true;
+        boolean isLocalStorageUsed = false;
 
-        ongoingExtractOperation = true;
-        boolean ls = false;
         try {
-            while (extractedPower < amt && it.hasNext()) {
-                final IAEPowerStorage node = it.next();
+            while (extractedPower < amount && iterator.hasNext()) {
+                IAEPowerStorage node = iterator.next();
                 if (node != null) {
-                    if (node == localStorage && mode == Actionable.MODULATE) {
-                        ls = true;
+                    if (node == this.localStorage && mode == Actionable.MODULATE) {
+                        isLocalStorageUsed = true;
                         continue;
                     }
 
-                    final double req = amt - extractedPower;
-                    final double newPower = node.extractAEPower(req, mode, PowerMultiplier.ONE);
-                    extractedPower += newPower;
+                    double requiredPower = amount - extractedPower;
+                    double extracted = node.extractAEPower(requiredPower, mode, PowerMultiplier.ONE);
+                    extractedPower += extracted;
 
-                    if (newPower < req && mode == Actionable.MODULATE) {
-                        it.remove();
+                    if (extracted < requiredPower && mode == Actionable.MODULATE) {
+                        iterator.remove();
                     }
                 } else {
-                    it.remove();
+                    iterator.remove();
                 }
             }
         } finally {
-            ongoingExtractOperation = false;
-            if (ls && extractedPower < amt) {
-                final double req = amt - extractedPower;
-                final double newPower = localStorage.extractAEPower(req, mode, PowerMultiplier.ONE);
+            this.ongoingExtractOperation = false;
 
-                extractedPower += newPower;
+            if (isLocalStorageUsed && extractedPower < amount) {
+                double requiredPower = amount - extractedPower;
+                double extracted = this.localStorage.extractAEPower(requiredPower, mode, PowerMultiplier.ONE);
+                extractedPower += extracted;
 
-                if (newPower < req) {
-                    providers.remove(localStorage);
+                if (extracted < requiredPower) {
+                    this.providers.remove(this.localStorage);
                 }
             }
         }
 
-        final double result = Math.min(extractedPower, amt);
+        double result = Math.min(extractedPower, amount);
 
         if (mode == Actionable.MODULATE) {
-            if (extractedPower > amt) {
-                this.localStorage.addCurrentAEPower(extractedPower - amt);
+            if (extractedPower > amount) {
+                this.localStorage.addCurrentAEPower(extractedPower - amount);
             }
-
             this.globalAvailablePower -= result;
             this.tickDrainPerTick += result;
         }
@@ -337,37 +336,42 @@ public class EnergyGridCache implements IEnergyGrid {
         return result;
     }
 
-    @Override
-    public double injectProviderPower(double amt, final Actionable mode) {
-        final double originalAmount = amt;
+    public double injectProviderPower(double amount, Actionable mode) {
+        double originalAmount = amount;
 
-        this.requesters.addAll(requesterToAdd);
-        requesterToAdd.clear();
-        requesters.removeIf(requesterToRemove::contains);
-        this.requesterToRemove.clear();
+        // Удаляем запросчиков, помеченных на удаление
+        if (!this.requesterToRemove.isEmpty()) {
+            this.requesters.removeAll(this.requesterToRemove);
+            this.requesterToRemove.clear();
+        }
 
-        final Iterator<IAEPowerStorage> it = this.requesters.iterator();
+        // Добавляем новых запросчиков
+        if (!this.requesterToAdd.isEmpty()) {
+            this.requesters.addAll(this.requesterToAdd);
+            this.requesterToAdd.clear();
+        }
 
-        ongoingInjectOperation = true;
+        Iterator<IAEPowerStorage> iterator = this.requesters.iterator();
+        this.ongoingInjectOperation = true;
+
         try {
-            while (amt > 0 && it.hasNext()) {
-                final IAEPowerStorage node = it.next();
-
+            while (amount > 0.0 && iterator.hasNext()) {
+                IAEPowerStorage node = iterator.next();
                 if (node != null) {
-                    amt = node.injectAEPower(amt, mode);
+                    amount = node.injectAEPower(amount, mode);
 
-                    if (amt > 0 && mode == Actionable.MODULATE) {
-                        it.remove();
+                    if (amount > 0.0 && mode == Actionable.MODULATE) {
+                        iterator.remove();
                     }
                 } else {
-                    it.remove();
+                    iterator.remove();
                 }
             }
         } finally {
-            ongoingInjectOperation = false;
+            this.ongoingInjectOperation = false;
         }
 
-        final double overflow = Math.max(0.0, amt);
+        double overflow = Math.max(0.0, amount);
 
         if (mode == Actionable.MODULATE) {
             this.tickInjectionPerTick += originalAmount - overflow;
