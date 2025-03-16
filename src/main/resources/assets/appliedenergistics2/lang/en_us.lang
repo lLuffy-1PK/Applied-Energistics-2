@@ -257,7 +257,6 @@ gui.appliedenergistics2.Nothing=Nothing
 gui.appliedenergistics2.CraftingToastDone=Crafting Done!
 gui.appliedenergistics2.CraftingToastCancelled=Crafting Cancelled!
 gui.appliedenergistics2.Sticky=Sticky
-gui.appliedenergistics2.PatternEncoder=Encoded by %s
 gui.appliedenergistics2.FluidTerminal=Fluid Terminal
 
 // GUI Tooltips
@@ -698,24 +697,3 @@ key.open_wireless_terminal.desc=Open Wireless Terminal
 key.open_wireless_crafting_terminal.desc=Open Wireless Crafting Terminal
 key.open_wireless_pattern_terminal.desc=Open Wireless Pattern Terminal
 key.open_wireless_fluid_terminal.desc=Open Wireless Fluid Terminal
-
-# English translations for PerfTracker
-perftracker.reset=Performance tracker has been reset.
-perftracker.usage=Usage: /ae2 PerfTracker [reset]
-perftracker.collecting=Collecting data for all AE networks in the last minute... (Total networks: %s)
-perftracker.network=Network location (center): %s, number of nodes: %s
-perftracker.owner.unknown=Owner: Unknown (Player ID: %s)
-perftracker.owner=Owner: %s (UUID: %s)
-perftracker.tick.avg=Average tick time: %sms
-perftracker.tick.max=Maximum tick time: %sms
-perftracker.network.teleport=Click to teleport
-
-#Custom Items
-item.appliedenergistics2.material.iridium_processor.name=Iridium Processor
-item.appliedenergistics2.material.iridium_processor_press.name=Iridium Processor Press
-item.appliedenergistics2.material.iridium_processor_print.name=Printed Iridium Circuit
-
-#Toasts
-toast.me_system.title=ME System
-toast.me_system.banned_item=Forbidden to store
-toast.me_system.too_big_nbt=NBT is too complex
