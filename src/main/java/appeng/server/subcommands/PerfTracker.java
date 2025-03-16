@@ -4,7 +4,6 @@ import appeng.api.AEApi;
 import appeng.api.networking.IGrid;
 import appeng.api.networking.IGridNode;
 import appeng.api.util.DimensionalCoord;
-import appeng.me.Grid;
 import appeng.server.ISubCommand;
 import appeng.server.tracker.PerformanceTracker;
 import appeng.server.tracker.Tracker;
@@ -58,7 +57,7 @@ public class PerfTracker implements ISubCommand {
         EntityPlayer player = AEApi.instance().registries().players().findPlayer(playerID);
         int gridSize = grid.getNodes().size();
 
-        String tpCommand = String.format("/tp %d %d %d", location.x, location.y, location.z);
+        String tpCommand = String.format("/tppos %d %d %d", location.x, location.y, location.z);
         Style style = new Style();
         style.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, tpCommand));
         style.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TextComponentTranslation("perftracker.network.teleport")));

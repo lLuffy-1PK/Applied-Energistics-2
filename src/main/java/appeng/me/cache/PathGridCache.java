@@ -18,7 +18,6 @@
 
 package appeng.me.cache;
 
-
 import appeng.api.AEApi;
 import appeng.api.networking.*;
 import appeng.api.networking.events.MENetworkBootingStatusChange;
@@ -42,12 +41,14 @@ import net.minecraft.entity.player.EntityPlayerMP;
 
 import java.util.*;
 
-
 public class PathGridCache implements IPathingGrid {
 
     private static final int BASE_TICKS = 20;
     private static final double POWER_DIVIDER = 128.0;
     private static final int COMPRESSED_CHANNEL_LIMIT = 9;
+
+    // backbone для хранения промежуточных результатов обработки маршрутов
+    private final Map<IPathItem, BackbonePathSegment> backbone = new HashMap<>();
 
     private final List<PathSegment> active = new ArrayList<>();
     private final Set<TileController> controllers = new HashSet<>();
@@ -78,7 +79,7 @@ public class PathGridCache implements IPathingGrid {
         if (updateNetwork) {
             updateNetworkStatus();
         }
-        processActiveSegments();
+        processActiveAndBackboneSegments();
     }
 
     /**
@@ -138,21 +139,57 @@ public class PathGridCache implements IPathingGrid {
     }
 
     /**
-     * Обработка активных сегментов путей.
+     * Обработка активных сегментов и backbone.
+     * Добавлена логика разделения обработки на этапы:
+     * - сначала выполняется step с TopologyStage.CONTROLLER_TO_BACKBONE для активных сегментов;
+     * - затем, если активных сегментов больше нет, обрабатываются backbone-сегменты.
      */
-    private void processActiveSegments() {
-        if (!active.isEmpty() || ticksUntilReady > 0) {
+    private void processActiveAndBackboneSegments() {
+        if (!active.isEmpty() || !backbone.isEmpty() || ticksUntilReady > 0) {
+            boolean firstStage = !active.isEmpty();
+
+            // Обработка активных сегментов с передачей в backbone
             Iterator<PathSegment> iterator = active.iterator();
             while (iterator.hasNext()) {
                 PathSegment segment = iterator.next();
-                if (segment.step()) {
+                if (segment.step(backbone, TopologyStage.CONTROLLER_TO_BACKBONE)) {
                     segment.setDead(true);
                     iterator.remove();
                 }
             }
+
+            // Если активные сегменты обработаны и есть сегменты в backbone, обрабатываем их
+            if (active.isEmpty() && !backbone.isEmpty()) {
+                if (firstStage) {
+                    for (BackbonePathSegment bp : backbone.values()) {
+                        BackbonePathSegment.reset(backbone);
+                        while (!bp.step(backbone, TopologyStage.BACKBONE)) {
+                            // Цикл установления топологии backbone
+                        }
+                        bp.selectControllerRoute();
+                    }
+                    BackbonePathSegment.reset(backbone);
+                } else {
+                    boolean hasAliveSegments = false;
+                    Iterator<BackbonePathSegment> bsi = backbone.values().iterator();
+                    while (bsi.hasNext()) {
+                        BackbonePathSegment bp = bsi.next();
+                        if (!bp.isDead() && bp.step(backbone, TopologyStage.PERIPHERALS)) {
+                            bp.setDead(true);
+                        }
+                        if (!bp.isDead()) {
+                            hasAliveSegments = true;
+                        }
+                    }
+                    if (!hasAliveSegments) {
+                        backbone.clear();
+                    }
+                }
+            }
+
             ticksUntilReady--;
 
-            if (active.isEmpty() && ticksUntilReady <= 0) {
+            if (active.isEmpty() && backbone.isEmpty() && ticksUntilReady <= 0) {
                 if (controllerState == ControllerState.CONTROLLER_ONLINE && !controllers.isEmpty()) {
                     TileController controller = controllers.iterator().next();
                     IGridNode gridNode = controller.getGridNode(AEPartLocation.INTERNAL);
@@ -357,5 +394,17 @@ public class PathGridCache implements IPathingGrid {
 
     public void setChannelsInUse(final int channels) {
         channelsInUse = channels;
+    }
+
+    public boolean isValidBackboneConnection(IPathItem pi) {
+        BackbonePathSegment bs = backbone.get(pi);
+        if (bs == null) return false;
+        return bs.isValid();
+    }
+
+    public void repathBackboneConnection(IPathItem pi) {
+        BackbonePathSegment bs = backbone.get(pi);
+        if (bs == null) return;
+        if (!bs.switchControllerRoute()) bs.transferToNeighbours();
     }
 }

@@ -883,7 +883,7 @@ public class DualityInterface implements IGridTickable, IStorageMonitorable, IIn
     }
 
     private InventoryAdaptor getAdaptor(final int slot) {
-        return new AdaptorItemHandler(new RangedWrapper(this.storage, slot, slot + 1));
+        return new AdaptorItemHandler(((AppEngNetworkInventory) this.storage).getBufferWrapper(slot));
     }
 
     private boolean handleCrafting(final int x, final InventoryAdaptor d, final IAEItemStack itemStack) {

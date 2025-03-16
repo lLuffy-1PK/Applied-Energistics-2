@@ -35,23 +35,28 @@ public final class AEItemStackRegistry {
     private AEItemStackRegistry() {
     }
 
-    static synchronized AESharedItemStack getRegisteredStack(@Nonnull ItemStack itemStack) {
+    static synchronized AESharedItemStack getRegisteredStack(final @Nonnull ItemStack itemStack) {
         if (itemStack.isEmpty()) {
             throw new IllegalArgumentException("stack cannot be empty");
-        } else {
-            int oldStackSize = itemStack.getCount();
-            itemStack.setCount(1);
-            AESharedItemStack search = new AESharedItemStack(itemStack);
-            WeakReference<AESharedItemStack> weak = REGISTRY.get(search);
-            AESharedItemStack ret = (weak != null) ? weak.get() : null;
-
-            if (ret == null) {
-                ret = new AESharedItemStack(itemStack.copy());
-                REGISTRY.put(ret, new WeakReference<>(ret));
-            }
-
-            itemStack.setCount(oldStackSize);
-            return ret;
         }
+
+        int oldStackSize = itemStack.getCount();
+        itemStack.setCount(1);
+
+        AESharedItemStack search = new AESharedItemStack(itemStack);
+        WeakReference<AESharedItemStack> weak = REGISTRY.get(search);
+        AESharedItemStack ret = null;
+
+        if (weak != null) {
+            ret = weak.get();
+        }
+
+        if (ret == null) {
+            ret = new AESharedItemStack(itemStack.copy());
+            REGISTRY.put(ret, new WeakReference<>(ret));
+        }
+        itemStack.setCount(oldStackSize);
+
+        return ret;
     }
 }

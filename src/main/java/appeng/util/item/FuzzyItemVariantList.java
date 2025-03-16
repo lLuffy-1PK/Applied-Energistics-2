@@ -29,6 +29,7 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectSortedMap;
 import net.minecraft.item.ItemStack;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Map;
 

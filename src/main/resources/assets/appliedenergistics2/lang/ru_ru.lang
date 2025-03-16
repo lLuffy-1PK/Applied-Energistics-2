@@ -684,3 +684,13 @@ perftracker.owner=Владелец: %s (UUID: %s)
 perftracker.tick.avg=Среднее время тика: %sms
 perftracker.tick.max=Максимальное время тика: %sms
 perftracker.network.teleport=Нажмите для телепортации
+
+#CustomItems
+item.appliedenergistics2.material.iridium_processor.name=Интегральный процессор
+item.appliedenergistics2.material.iridium_processor_press.name=Интегральный пресс для высекателя
+item.appliedenergistics2.material.iridium_processor_print.name=Отпечатанный интегральный контур
+
+#Toasts
+toast.me_system.title=МЭ система
+toast.me_system.banned_item=Предмет запрещён к хранению
+toast.me_system.too_big_nbt=NBT тэг слишком большой

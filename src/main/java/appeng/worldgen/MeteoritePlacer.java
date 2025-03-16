@@ -222,7 +222,7 @@ public final class MeteoritePlacer {
                         ItemStack toAdd = ItemStack.EMPTY;
                         final IMaterials materials = AEApi.instance().definitions().materials();
 
-                        switch (r % 4) {
+                        switch (r % 5) {
                             case 0:
                                 toAdd = materials.calcProcessorPress().maybeStack(1).orElse(ItemStack.EMPTY);
                                 break;
@@ -233,6 +233,9 @@ public final class MeteoritePlacer {
                                 toAdd = materials.logicProcessorPress().maybeStack(1).orElse(ItemStack.EMPTY);
                                 break;
                             case 3:
+                                toAdd = materials.iridiumProcessorPress().maybeStack(1).orElse(ItemStack.EMPTY);
+                                break;
+                            case 4:
                                 toAdd = materials.siliconPress().maybeStack(1).orElse(ItemStack.EMPTY);
                                 break;
                             default:

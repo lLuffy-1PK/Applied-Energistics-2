@@ -149,4 +149,10 @@ public interface IMaterials {
     IItemDefinition fluidCell16kPart();
 
     IItemDefinition fluidCell64kPart();
+
+    IItemDefinition iridiumProcessorPress();
+
+    IItemDefinition iridiumProcessorPrint();
+
+    IItemDefinition iridiumProcessor();
 }

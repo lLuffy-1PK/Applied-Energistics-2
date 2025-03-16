@@ -20,11 +20,10 @@ package appeng.util.item;
 
 import appeng.api.config.FuzzyMode;
 import appeng.api.storage.data.IAEItemStack;
-import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
-import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * This variant list is optimized for items that cannot be damaged and thus do not support querying durability ranges
@@ -32,7 +31,7 @@ import java.util.Map;
  */
 class NormalItemVariantList extends ItemVariantList {
 
-    private final Reference2ObjectMap<AESharedItemStack, IAEItemStack> records = new Reference2ObjectOpenHashMap<>();
+    private final Map<AESharedItemStack, IAEItemStack> records = new ConcurrentHashMap<>();
 
     @Override
     Map<AESharedItemStack, IAEItemStack> getRecords() {
@@ -44,7 +43,7 @@ class NormalItemVariantList extends ItemVariantList {
      */
     @Override
     public Collection<IAEItemStack> findFuzzy(IAEItemStack filter, FuzzyMode fuzzy) {
-        return this.records.values();
+        return this.getRecords().values();
     }
 
 }

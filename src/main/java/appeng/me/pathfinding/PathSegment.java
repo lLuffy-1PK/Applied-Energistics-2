@@ -18,7 +18,6 @@
 
 package appeng.me.pathfinding;
 
-
 import appeng.api.networking.GridFlags;
 import appeng.api.networking.IGridMultiblock;
 import appeng.api.networking.IGridNode;
@@ -26,16 +25,16 @@ import appeng.me.cache.PathGridCache;
 
 import java.util.*;
 
-
 public class PathSegment {
 
     private final PathGridCache pgc;
     private final Set<IPathItem> semiOpen;
-    private final Set<IPathItem> closed;
+    protected final Set<IPathItem> closed;
     private boolean isDead;
-    private List<IPathItem> open;
+    protected List<IPathItem> open;
 
-    public PathSegment(final PathGridCache myPGC, final List<IPathItem> open, final Set<IPathItem> semiOpen, final Set<IPathItem> closed) {
+    public PathSegment(final PathGridCache myPGC, final List<IPathItem> open, final Set<IPathItem> semiOpen,
+                       final Set<IPathItem> closed) {
         this.open = open;
         this.semiOpen = semiOpen;
         this.closed = closed;
@@ -43,30 +42,25 @@ public class PathSegment {
         this.setDead(false);
     }
 
-    public boolean step() {
+    public boolean step(Map<IPathItem, BackbonePathSegment> backbone, TopologyStage stage) {
         final List<IPathItem> oldOpen = this.open;
-        this.open = new ArrayList<>();
+        this.open = new LinkedList<>();
 
         for (final IPathItem i : oldOpen) {
             for (final IPathItem pi : i.getPossibleOptions()) {
                 final EnumSet<GridFlags> flags = pi.getFlags();
-
                 if (!this.closed.contains(pi)) {
+                    boolean stopHere = false;
                     pi.setControllerRoute(i, true);
 
-                    if (flags.contains(GridFlags.REQUIRE_CHANNEL)) {
+                    if (flags.contains(GridFlags.REQUIRE_CHANNEL) && stage != TopologyStage.BACKBONE) {
                         // close the semi open.
                         if (!this.semiOpen.contains(pi)) {
-                            final boolean worked;
-
-                            if (flags.contains(GridFlags.COMPRESSED_CHANNEL)) {
-                                worked = this.useDenseChannel(pi);
-                            } else {
-                                worked = this.useChannel(pi);
-                            }
+                            final boolean worked = this.useChannel(pi, flags.contains(GridFlags.COMPRESSED_CHANNEL));
 
                             if (worked && flags.contains(GridFlags.MULTIBLOCK)) {
-                                final Iterator<IGridNode> oni = ((IGridMultiblock) ((IGridNode) pi).getGridBlock()).getMultiblockNodes();
+                                final Iterator<IGridNode> oni = ((IGridMultiblock) ((IGridNode) pi).getGridBlock())
+                                        .getMultiblockNodes();
                                 while (oni.hasNext()) {
                                     final IGridNode otherNodes = oni.next();
                                     if (otherNodes != pi) {
@@ -80,8 +74,15 @@ public class PathSegment {
                         }
                     }
 
-                    this.closed.add(pi);
-                    this.open.add(pi);
+                    if (!stopHere) {
+                        this.closed.add(pi);
+                        this.open.add(pi);
+                    }
+                } else if (stage == TopologyStage.BACKBONE) {
+                    BackbonePathSegment bb = backbone.get(pi);
+                    if (bb != null && bb != this) {
+                        bb.addPathToNeighbour((BackbonePathSegment) this, i);
+                    }
                 }
             }
         }
@@ -89,43 +90,22 @@ public class PathSegment {
         return this.open.isEmpty();
     }
 
-    private boolean useDenseChannel(final IPathItem start) {
-        IPathItem pi = start;
-        while (pi != null) {
-            if (!pi.canSupportMoreChannels() || pi.getFlags().contains(GridFlags.CANNOT_CARRY_COMPRESSED)) {
+    private boolean useChannel(final IPathItem start, boolean p2p) {
+        for (IPathItem pi = start; pi != null; pi = pi.getControllerRoute()) {
+            if (!pi.canSupportMoreChannels() || (p2p && pi.getFlags().contains(GridFlags.CANNOT_CARRY_COMPRESSED)))
                 return false;
-            }
-
-            pi = pi.getControllerRoute();
         }
 
-        pi = start;
-        while (pi != null) {
+        boolean haveBlockingNode = false;
+        IPathItem lastBackboneConnection = null;
+        for (IPathItem pi = start; pi != null; pi = pi.getControllerRoute()) {
             this.pgc.setChannelsByBlocks(this.pgc.getChannelsByBlocks() + 1);
             pi.incrementChannelCount(1);
-            pi = pi.getControllerRoute();
+            if (!pi.canSupportMoreChannels()) haveBlockingNode = true;
+            if (pgc.isValidBackboneConnection(pi)) lastBackboneConnection = pi;
         }
 
-        this.pgc.setChannelsInUse(this.pgc.getChannelsInUse() + 1);
-        return true;
-    }
-
-    private boolean useChannel(final IPathItem start) {
-        IPathItem pi = start;
-        while (pi != null) {
-            if (!pi.canSupportMoreChannels()) {
-                return false;
-            }
-
-            pi = pi.getControllerRoute();
-        }
-
-        pi = start;
-        while (pi != null) {
-            this.pgc.setChannelsByBlocks(this.pgc.getChannelsByBlocks() + 1);
-            pi.incrementChannelCount(1);
-            pi = pi.getControllerRoute();
-        }
+        if (haveBlockingNode && lastBackboneConnection != null) pgc.repathBackboneConnection(lastBackboneConnection);
 
         this.pgc.setChannelsInUse(this.pgc.getChannelsInUse() + 1);
         return true;

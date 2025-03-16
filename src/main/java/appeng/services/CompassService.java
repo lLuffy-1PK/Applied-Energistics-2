@@ -119,19 +119,15 @@ public final class CompassService {
         // lower level...
         final Chunk c = w.getChunk(cx, cz);
 
-        Optional<Block> maybeBlock = AEApi.instance().definitions().blocks().skyStoneChest().maybeBlock();
+        Optional<Block> maybeBlock = AEApi.instance().definitions().blocks().skyStoneBlock().maybeBlock();
         if (maybeBlock.isPresent()) {
-            Block skyStoneChest = maybeBlock.get();
+            Block skyStoneBlock = maybeBlock.get();
             for (int i = 0; i < CHUNK_SIZE; i++) {
                 for (int j = 0; j < CHUNK_SIZE; j++) {
                     for (int k = low_y; k < hi_y; k++) {
-                        final IBlockState state = c.getBlockState(i, k, j);
-                        final Block blk = state.getBlock();
-                        if (blk == skyStoneChest) {
-                            if (state.getPropertyKeys().contains(BlockSkyChest.NATURAL)
-                                    && state.getValue(BlockSkyChest.NATURAL)) {
-                                return this.executor.submit(new CMUpdatePost(w, cx, cz, cdy, true));
-                            }
+                        final Block blk = c.getBlockState(i, k, j).getBlock();
+                        if (blk == skyStoneBlock) {
+                            return this.executor.submit(new CMUpdatePost(w, cx, cz, cdy, true));
                         }
                     }
                 }

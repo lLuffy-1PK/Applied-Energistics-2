@@ -212,10 +212,14 @@ public class AEItemStack extends AEStack<IAEItemStack> implements IAEItemStack {
     public boolean isSameType(ItemStack otherStack) {
         if (otherStack.isEmpty()) {
             return false;
-        } else {
-            ItemStack stack = this.getDefinition();
-            return stack.getItemDamage() == otherStack.getItemDamage() && AESharedItemStack.stackEquals(stack, otherStack);
         }
+        int oldSize = otherStack.getCount();
+
+        otherStack.setCount(1);
+        boolean ret = ItemStack.areItemStacksEqual(this.getDefinition(), otherStack);
+        otherStack.setCount(oldSize);
+
+        return ret;
     }
 
     @Override
@@ -344,4 +348,5 @@ public class AEItemStack extends AEStack<IAEItemStack> implements IAEItemStack {
 
         return false;
     }
+
 }

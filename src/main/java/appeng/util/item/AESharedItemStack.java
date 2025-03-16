@@ -1,50 +1,29 @@
-/*
- * This file is part of Applied Energistics 2.
- * Copyright (c) 2013 - 2014, AlgorithmX2, All rights reserved.
- *
- * Applied Energistics 2 is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Applied Energistics 2 is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Applied Energistics 2.  If not, see <http://www.gnu.org/licenses/lgpl>.
- */
-
 package appeng.util.item;
 
 import com.google.common.base.Preconditions;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 
+import java.util.Objects;
 
-final class AESharedItemStack {
+final class AESharedItemStack implements Comparable<AESharedItemStack> {
+
+    private static final NBTTagCompound LOW_TAG = new NBTTagCompound();
+    private static final NBTTagCompound HIGH_TAG = new NBTTagCompound();
 
     private final ItemStack itemStack;
+    private final int itemId;
     private final int itemDamage;
     private final int hashCode;
+    private final NBTTagCompound tagCompound;
 
-    public AESharedItemStack(final ItemStack itemStack) {
-        this(itemStack, itemStack.getItemDamage());
-    }
-
-    /**
-     * A constructor to explicitly set the damage value and not fetch it from the {@link ItemStack}
-     *
-     * @param itemStack The {@link ItemStack} to filter
-     * @param damage    The damage of the item
-     */
-    private AESharedItemStack(ItemStack itemStack, int damage) {
+    public AESharedItemStack(ItemStack itemStack) {
         this.itemStack = itemStack;
-        this.itemDamage = damage;
-
-        // Ensure this is always called last.
-        this.hashCode = this.makeHashCode();
+        this.itemId = Item.getIdFromItem(itemStack.getItem());
+        this.itemDamage = itemStack.getItemDamage();
+        this.tagCompound = itemStack.getTagCompound();
+        this.hashCode = Objects.hash(this.itemId, this.itemDamage, this.tagCompound != null ? this.tagCompound : 0);
     }
 
     ItemStack getDefinition() {
@@ -65,51 +44,57 @@ final class AESharedItemStack {
         if (this == obj) {
             return true;
         }
-        if (!(obj instanceof final AESharedItemStack other)) {
+        if (!(obj instanceof AESharedItemStack)) {
             return false;
         }
 
-        Preconditions.checkState(this.itemStack.getCount() == 1, "ItemStack#getCount() has to be 1");
-        Preconditions.checkArgument(other.itemStack.getCount() == 1, "ItemStack#getCount() has to be 1");
+        final AESharedItemStack other = (AESharedItemStack) obj;
 
         if (this.itemStack == other.itemStack) {
             return true;
         }
-        return stackEquals(this.itemStack, other.itemStack);
+        return ItemStack.areItemStacksEqual(this.itemStack, other.itemStack);
     }
 
-    public static boolean stackEquals(ItemStack stackA, ItemStack stackB) {
-        if (stackA.isEmpty() && stackB.isEmpty()) {
-            return true;
-        } else if (stackA.isEmpty() && !stackB.isEmpty()) {
-            return false;
-        } else if (stackA.getItem() != stackB.getItem()) {
-            return false;
+    @Override
+    public int compareTo(final AESharedItemStack itemStack) {
+        if (this.itemStack == itemStack.getDefinition()) {
+            return 0;
         }
 
-        NBTTagCompound stackATag = stackA.getTagCompound();
-        NBTTagCompound stackBTag = stackB.getTagCompound();
-
-        if (stackATag == null || stackATag.isEmpty()) {
-            if (stackBTag != null && !stackBTag.isEmpty()) {
-                return false; // stackA has no tag but stackB tag is not empty, is invalid.
-            }
-        } else {
-            if (stackBTag == null || stackBTag.isEmpty()) {
-                return false; // stackA has tag but stackB has no tag, is invalid.
-            }
-            if (!stackATag.equals(stackBTag)) {
-                return false; // Different tag, is invalid.
-            }
+        final int id = this.itemId - itemStack.itemId;
+        if (id != 0) {
+            return id;
         }
-        return stackA.areCapsCompatible(stackB);
+
+        final int damageValue = this.itemDamage - itemStack.itemDamage;
+        if (damageValue != 0) {
+            return damageValue;
+        }
+
+        final int nbt = this.compareNBT(itemStack.getDefinition());
+        if (nbt != 0) {
+            return nbt;
+        }
+
+        if (!this.itemStack.areCapsCompatible(itemStack.getDefinition())) {
+            return System.identityHashCode(this.itemStack) - System.identityHashCode(itemStack.getDefinition());
+        }
+        return 0;
     }
 
-    private int makeHashCode() {
-        final NBTTagCompound tag = this.itemStack.getTagCompound();
-        final int combinedHashCode =  Long.hashCode(System.identityHashCode(this.itemStack.getItem()) & 0xFFFFFFFFL | (this.itemDamage & 0xFFFFFFFFL) << 32);
-        final int tagHashCode = tag != null && !tag.isEmpty() ? tag.hashCode() : 0;
-        return tagHashCode != 0 ? combinedHashCode ^ tagHashCode : combinedHashCode;
+    private int compareNBT(final ItemStack itemStack) {
+        final NBTTagCompound otherTagCompound = itemStack.getTagCompound();
+        if (this.tagCompound == otherTagCompound) {
+            return 0;
+        }
+        if (this.tagCompound == LOW_TAG || otherTagCompound == HIGH_TAG) {
+            return -1;
+        }
+        if (this.tagCompound == HIGH_TAG || otherTagCompound == LOW_TAG) {
+            return 1;
+        }
+        return System.identityHashCode(this.tagCompound) - System.identityHashCode(otherTagCompound);
     }
 
 }

@@ -15,13 +15,5 @@
       10,
       11
     ]
-  },
-  "ctm": {
-    "ctm_version": 1,
-    "layer": "BLOOM",
-    "gregtech": true,
-    "extra": {
-      "light": 10
-    }
   }
 }

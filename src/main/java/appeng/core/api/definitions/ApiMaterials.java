@@ -124,6 +124,10 @@ public final class ApiMaterials implements IMaterials {
     private final IItemDefinition fluidCell16kPart;
     private final IItemDefinition fluidCell64kPart;
 
+    private final IItemDefinition iridiumProcessorPress;
+    private final IItemDefinition iridiumProcessorPrint;
+    private final IItemDefinition iridiumProcessor;
+
     public ApiMaterials(FeatureFactory registry) {
         final ItemMaterial materials = new ItemMaterial();
         registry.item("material", () -> materials)
@@ -169,6 +173,8 @@ public final class ApiMaterials implements IMaterials {
                 .createMaterial(MaterialType.ENGINEERING_PROCESSOR_PRESS));
         this.logicProcessorPress = new DamagedItemDefinition("material.press.processor.logic", materials
                 .createMaterial(MaterialType.LOGIC_PROCESSOR_PRESS));
+        this.iridiumProcessorPress = new DamagedItemDefinition("material.press.processor.iridium", materials
+                .createMaterial(MaterialType.IRIDIUM_PROCESSOR_PRESS));
         this.siliconPress = new DamagedItemDefinition("material.press.silicon", materials.createMaterial(MaterialType.SILICON_PRESS));
         this.namePress = new DamagedItemDefinition("material.press.name", materials.createMaterial(MaterialType.NAME_PRESS));
 
@@ -178,11 +184,14 @@ public final class ApiMaterials implements IMaterials {
                 .createMaterial(MaterialType.ENGINEERING_PROCESSOR_PRINT));
         this.logicProcessorPrint = new DamagedItemDefinition("material.print.processor.logic", materials
                 .createMaterial(MaterialType.LOGIC_PROCESSOR_PRINT));
+        this.iridiumProcessorPrint = new DamagedItemDefinition("material.print.processor.iridium", materials
+                .createMaterial(MaterialType.IRIDIUM_PROCESSOR_PRINT));
         this.siliconPrint = new DamagedItemDefinition("material.print.silicon", materials.createMaterial(MaterialType.SILICON_PRINT));
 
         this.logicProcessor = new DamagedItemDefinition("material.processor.logic", materials.createMaterial(MaterialType.LOGIC_PROCESSOR));
         this.calcProcessor = new DamagedItemDefinition("material.processor.calculation", materials.createMaterial(MaterialType.CALCULATION_PROCESSOR));
         this.engProcessor = new DamagedItemDefinition("material.processor.engineering", materials.createMaterial(MaterialType.ENGINEERING_PROCESSOR));
+        this.iridiumProcessor = new DamagedItemDefinition("material.processor.iridium", materials.createMaterial(MaterialType.IRIDIUM_PROCESSOR));
 
         this.basicCard = new DamagedItemDefinition("material.card.basic", materials.createMaterial(MaterialType.BASIC_CARD));
         this.advCard = new DamagedItemDefinition("material.card.advanced", materials.createMaterial(MaterialType.ADVANCED_CARD));
@@ -550,5 +559,21 @@ public final class ApiMaterials implements IMaterials {
     @Override
     public IItemDefinition fluidCell64kPart() {
         return this.fluidCell64kPart;
+    }
+
+
+    @Override
+    public IItemDefinition iridiumProcessorPress() {
+        return this.iridiumProcessorPress;
+    }
+
+    @Override
+    public IItemDefinition iridiumProcessorPrint() {
+        return this.iridiumProcessorPrint;
+    }
+
+    @Override
+    public IItemDefinition iridiumProcessor() {
+        return this.iridiumProcessor;
     }
 }

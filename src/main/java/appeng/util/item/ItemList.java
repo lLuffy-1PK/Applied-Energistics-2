@@ -22,17 +22,17 @@ import appeng.api.config.FuzzyMode;
 import appeng.api.storage.data.IAEItemStack;
 import appeng.api.storage.data.IItemList;
 import appeng.util.Platform;
-import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
-import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import net.minecraft.item.Item;
 
+import javax.annotation.Nonnull;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 
 public final class ItemList implements IItemList<IAEItemStack> {
 
-    private final Reference2ObjectMap<Item, ItemVariantList> records = new Reference2ObjectOpenHashMap<>();
+    private final Map<Item, ItemVariantList> records = new ConcurrentHashMap<>();
     /**
      * We increment this version field everytime an attempt to mutate this item list (or potentially one of its
      * sub-lists) is made. Iterators will copy the version when they are created and compare it against the current
@@ -120,14 +120,10 @@ public final class ItemList implements IItemList<IAEItemStack> {
 
     @Override
     public int size() {
-        int size = 0;
-        for (ItemVariantList entry : records.values()) {
-            size += entry.size();
-        }
-
-        return size;
+        return records.values().stream().mapToInt(ItemVariantList::size).sum();
     }
 
+    @Nonnull
     @Override
     public Iterator<IAEItemStack> iterator() {
         return new ChainedIterator(this.records.values().iterator(), version);
