@@ -38,6 +38,8 @@ import appeng.core.AppEng;
 import appeng.core.localization.ButtonToolTips;
 import appeng.core.localization.GuiText;
 import appeng.core.localization.PlayerMessages;
+import appeng.core.sync.network.NetworkHandler;
+import appeng.core.sync.packets.PacketConfigureInterface;
 import appeng.helpers.DualityInterface;
 import appeng.helpers.PatternHelper;
 import appeng.helpers.WirelessTerminalGuiObject;
@@ -285,10 +287,14 @@ public class GuiInterfaceTerminal extends AEBaseGui {
         for (int x = 0; x < rows && linesDraw < rows && currentScroll + x < this.lines.size(); x++) {
             final Object lineObj = this.lines.get(currentScroll + x);
             if (lineObj instanceof ClientDCInternalInv inv) {
+                GuiButton highlightBtn = new GuiImgButton(guiLeft + 4, guiTop + offset + 1, Settings.ACTIONS, ActionItems.HIGHLIGHT_INTERFACE);
+                guiButtonHashMap.put(highlightBtn, inv);
+                this.buttonList.add(highlightBtn);
 
-                GuiButton guiButton = new GuiImgButton(guiLeft + 4, guiTop + offset + 1, Settings.ACTIONS, ActionItems.HIGHLIGHT_INTERFACE);
-                guiButtonHashMap.put(guiButton, inv);
-                this.buttonList.add(guiButton);
+
+                GuiButton configBtn = new GuiImgButton(guiLeft + 4, guiTop + offset + 1 - 16, Settings.ACTIONS, ActionItems.CONFIGURE_INTERFACE);
+                guiButtonHashMap.put(configBtn, inv);
+                this.buttonList.add(configBtn);
 
                 final int extraLines = numUpgradesMap.get(inv);
                 for (int row = 0; row < 1 + extraLines && linesDraw < rows; ++row) {
@@ -323,11 +329,12 @@ public class GuiInterfaceTerminal extends AEBaseGui {
 
     @Override
     protected void actionPerformed(final GuiButton btn) throws IOException {
-        if (guiButtonHashMap.containsKey(btn)) {
-            BlockPos blockPos = blockPosHashMap.get(guiButtonHashMap.get(this.selectedButton));
+        if (guiButtonHashMap.containsKey(btn) && btn instanceof GuiImgButton guiImgButton) {
+            ClientDCInternalInv inv = guiButtonHashMap.get(this.selectedButton);
+            BlockPos blockPos = blockPosHashMap.get(inv);
             BlockPos blockPos2 = mc.player.getPosition();
             int playerDim = mc.world.provider.getDimension();
-            int interfaceDim = dimHashMap.get(guiButtonHashMap.get(this.selectedButton));
+            int interfaceDim = dimHashMap.get(inv);
             if (playerDim != interfaceDim) {
                 try {
                     mc.player.sendStatusMessage(PlayerMessages.InterfaceInOtherDimParam.get(interfaceDim, DimensionManager.getWorld(interfaceDim).provider.getDimensionType().getName()), false);
@@ -335,10 +342,14 @@ public class GuiInterfaceTerminal extends AEBaseGui {
                     mc.player.sendStatusMessage(PlayerMessages.InterfaceInOtherDim.get(), false);
                 }
             } else {
-                hilightBlock(blockPos, System.currentTimeMillis() + 500 * BlockPosUtils.getDistance(blockPos, blockPos2), playerDim);
-                mc.player.sendStatusMessage(PlayerMessages.InterfaceHighlighted.get(blockPos.getX(), blockPos.getY(), blockPos.getZ()), false);
+                if (guiImgButton.getCurrentValue() == ActionItems.HIGHLIGHT_INTERFACE) {
+                    hilightBlock(blockPos, System.currentTimeMillis() + 500 * BlockPosUtils.getDistance(blockPos, blockPos2), playerDim);
+                    mc.player.sendStatusMessage(PlayerMessages.InterfaceHighlighted.get(blockPos.getX(), blockPos.getY(), blockPos.getZ()), false);
+                    mc.player.closeScreen();
+                } else if (guiImgButton.getCurrentValue() == ActionItems.CONFIGURE_INTERFACE) {
+                    NetworkHandler.instance.sendToServer(new PacketConfigureInterface(inv.getId()));
+                }
             }
-            mc.player.closeScreen();
         } else if (btn == guiButtonHideFull) {
             onlyShowWithSpace = !onlyShowWithSpace;
             this.refreshList();
@@ -465,8 +476,7 @@ public class GuiInterfaceTerminal extends AEBaseGui {
             this.refreshList = true;
         }
 
-        for (final Object oKey : in.getKeySet()) {
-            final String key = (String) oKey;
+        for (final String key : in.getKeySet()) {
             if (key.startsWith("=")) {
                 try {
                     final long id = Long.parseLong(key.substring(1), Character.MAX_RADIX);

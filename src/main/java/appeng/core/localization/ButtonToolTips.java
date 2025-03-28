@@ -168,6 +168,8 @@ public enum ButtonToolTips {
     ToggleShowOnlyInvalidInterfaceOffDesc,
     HighlightInterface,
     HighlightInterfaceDesc,
+    ConfigureInterface,
+    ConfigureInterfaceDesc,
     SearchFieldInputs,
     SearchFieldOutputs,
     SearchFieldNames,
