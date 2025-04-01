@@ -212,6 +212,15 @@ public enum GuiText {
     CraftingToastDone,
     CraftingToastCancelled,
 
+    //Used in Lock Crafting,
+    CraftingLock,
+    NoneLock,
+    LowRedstoneLock,
+    HighRedstoneLock,
+    ResultLock,
+    UntilPulseUnlock,
+  
+    // Used in Annihilation Planes
     CanBeEnchanted,
     IncreasedEnergyUseFromEnchants,
     Deprecated;

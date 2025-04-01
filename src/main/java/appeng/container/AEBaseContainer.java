@@ -402,6 +402,9 @@ public abstract class AEBaseContainer extends Container {
                                 int maxSize = d instanceof SlotOversized ? d.getSlotStackLimit() : Math.min(tis.getMaxStackSize(), d.getSlotStackLimit());
 
                                 int placeAble = maxSize - t.getCount();
+                                if (placeAble <= 0) {
+                                    continue;
+                                }
 
                                 if (tis.getCount() < placeAble) {
                                     placeAble = tis.getCount();
@@ -953,20 +956,13 @@ public abstract class AEBaseContainer extends Container {
 
     @Override
     public ItemStack slotClick(int slotId, int dragType, ClickType clickTypeIn, @NotNull EntityPlayer player) {
-        if (slotId >= 0 && slotId < this.inventorySlots.size()) {
-            if (this.locked.contains(slotId)) {
+        if (slotId >= 0) {
+            final var slot = this.getSlot(slotId);
+            if (slot instanceof SlotDisabled) {
                 return ItemStack.EMPTY;
             }
-            if (clickTypeIn == ClickType.SWAP && dragType >= 0 && dragType < 9) {
-                if (this.locked.contains(dragType)) {
-                    return ItemStack.EMPTY;
-                }
-            }
-        }
 
-        if (slotId >= 0 && clickTypeIn == ClickType.PICKUP) {
-            final var slot = this.getSlot(slotId);
-            if (slot instanceof AppEngSlot appEngSlot) {
+            if (slot instanceof AppEngSlot appEngSlot && clickTypeIn == ClickType.PICKUP) {
                 var slotStack = slot.getStack();
                 var draggedStack = this.invPlayer.getItemStack();
 
