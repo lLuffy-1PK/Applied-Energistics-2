@@ -194,11 +194,16 @@ public class FluidHandlerAdapter implements IMEInventory<IAEFluidStack>, IBaseMo
             IItemList<IAEFluidStack> currentlyOnStorage = AEApi.instance().storage().getStorageChannel(IFluidStorageChannel.class).createList();
 
             for (IFluidTankProperties tankProperty : tankProperties) {
-                var contents = tankProperty.getContents();
-                if (this.mode == StorageFilter.EXTRACTABLE_ONLY && this.fluidHandler.drain(contents, false) == null) {
-                    continue;
+                if (this.mode == StorageFilter.EXTRACTABLE_ONLY) {
+                    FluidStack contents = tankProperty.getContents();
+                    if (contents == null || contents.amount <= 0) {
+                        continue;
+                    }
+                    if (this.fluidHandler.drain(1, false) == null) {
+                        continue;
+                    }
                 }
-                currentlyOnStorage.add(AEFluidStack.fromFluidStack(contents));
+                currentlyOnStorage.add(AEFluidStack.fromFluidStack(tankProperty.getContents()));
             }
 
             for (final IAEFluidStack is : currentlyCached) {
