@@ -22,6 +22,7 @@ package appeng.worldgen.meteorite;
 import appeng.api.definitions.IBlockDefinition;
 import appeng.util.Platform;
 import net.minecraft.init.Blocks;
+import net.minecraft.util.math.BlockPos;
 
 
 public class Fallout {
@@ -43,7 +44,7 @@ public class Fallout {
         } else if (random > 0.8) {
             this.putter.put(w, x, y, z, Blocks.COBBLESTONE);
         } else if (random > 0.7) {
-            this.putter.put(w, x, y, z, Blocks.DIRT);
+            this.putter.put(w, x, y, z, w.getWorld().getBiome(new BlockPos(x, y, z)).fillerBlock);
         } else {
             this.putter.put(w, x, y, z, Blocks.GRAVEL);
         }
@@ -55,7 +56,7 @@ public class Fallout {
         } else if (random > 0.8) {
             this.putter.put(w, x, y, z, Blocks.STONE);
         } else if (random > 0.7) {
-            this.putter.put(w, x, y, z, Blocks.GRASS);
+            this.putter.put(w, x, y, z, w.getWorld().getBiome(new BlockPos(x, y, z)).topBlock);
         } else if (random > 0.6) {
             this.skyStoneDefinition.maybeBlock().ifPresent(block -> this.putter.put(w, x, y, z, block));
         } else if (random > 0.5) {
