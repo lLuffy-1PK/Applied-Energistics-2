@@ -47,103 +47,181 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Random;
 
 
 public final class MeteoritePlacer {
-    private static final double PRESSES_SPAWN_CHANCE = 0.7;
     private static final int SKYSTONE_SPAWN_LIMIT = 12;
-    private final Collection<Block> validSpawn = new HashSet<>();
-    private final Collection<Block> invalidSpawn = new HashSet<>();
-    private final IBlockDefinition skyChestDefinition;
-    private final IBlockDefinition skyStoneDefinition;
+
+    private static final long SEED_OFFSET_CHEST_LOOT = 1;
+    private static final long SEED_OFFSET_DECAY = 2;
+
+    private static final Collection<Block> validSpawn = new HashSet<>();
+    private static final Collection<Block> invalidSpawn = new HashSet<>();
+    private static IBlockDefinition skyChestDefinition;
+    private static IBlockDefinition skyStoneDefinition;
+
+    private final IMeteoriteWorld world;
+    private final long seed;
+    private final int x, y, z;
+    private final int skyMode;
+    private final double meteoriteSize;
+    private final double craterSize;
+    private final double squaredMeteoriteSize;
+    private final double squaredCraterSize;
     private final MeteoriteBlockPutter putter = new MeteoriteBlockPutter();
-    private double meteoriteSize = (Math.random() * 6.0) + 2;
-    private double realCrater = this.meteoriteSize * 2 + 5;
-    private double squaredMeteoriteSize = this.meteoriteSize * this.meteoriteSize;
-    private double crater = this.realCrater * this.realCrater;
-    private NBTTagCompound settings;
+    private final NBTTagCompound settings;
     private Fallout type;
 
-    public MeteoritePlacer() {
-        final IBlocks blocks = AEApi.instance().definitions().blocks();
+    private static void initializeSpawnLists() {
+        if (validSpawn.isEmpty()) {
+            final IBlocks blocks = AEApi.instance().definitions().blocks();
+            skyChestDefinition = blocks.skyStoneChest();
+            skyStoneDefinition = blocks.skyStoneBlock();
 
-        this.skyChestDefinition = blocks.skyStoneChest();
-        this.skyStoneDefinition = blocks.skyStoneBlock();
+            validSpawn.clear();
+            validSpawn.add(Blocks.STONE);
+            validSpawn.add(Blocks.COBBLESTONE);
+            validSpawn.add(Blocks.GRASS);
+            validSpawn.add(Blocks.SAND);
+            validSpawn.add(Blocks.DIRT);
+            validSpawn.add(Blocks.GRAVEL);
+            validSpawn.add(Blocks.NETHERRACK);
+            validSpawn.add(Blocks.IRON_ORE);
+            validSpawn.add(Blocks.GOLD_ORE);
+            validSpawn.add(Blocks.DIAMOND_ORE);
+            validSpawn.add(Blocks.REDSTONE_ORE);
+            validSpawn.add(Blocks.HARDENED_CLAY);
+            validSpawn.add(Blocks.ICE);
+            validSpawn.add(Blocks.SNOW);
+            validSpawn.add(Blocks.STAINED_HARDENED_CLAY);
 
-        this.validSpawn.add(Blocks.STONE);
-        this.validSpawn.add(Blocks.COBBLESTONE);
-        this.validSpawn.add(Blocks.GRASS);
-        this.validSpawn.add(Blocks.SAND);
-        this.validSpawn.add(Blocks.DIRT);
-        this.validSpawn.add(Blocks.GRAVEL);
-        this.validSpawn.add(Blocks.NETHERRACK);
-        this.validSpawn.add(Blocks.IRON_ORE);
-        this.validSpawn.add(Blocks.GOLD_ORE);
-        this.validSpawn.add(Blocks.DIAMOND_ORE);
-        this.validSpawn.add(Blocks.REDSTONE_ORE);
-        this.validSpawn.add(Blocks.HARDENED_CLAY);
-        this.validSpawn.add(Blocks.ICE);
-        this.validSpawn.add(Blocks.SNOW);
-        this.validSpawn.add(Blocks.STAINED_HARDENED_CLAY);
-
-        this.skyStoneDefinition.maybeBlock().ifPresent(this.invalidSpawn::add);
-        this.invalidSpawn.add(Blocks.PLANKS);
-        this.invalidSpawn.add(Blocks.IRON_DOOR);
-        this.invalidSpawn.add(Blocks.IRON_BARS);
-        this.invalidSpawn.add(Blocks.OAK_DOOR);
-        this.invalidSpawn.add(Blocks.ACACIA_DOOR);
-        this.invalidSpawn.add(Blocks.BIRCH_DOOR);
-        this.invalidSpawn.add(Blocks.DARK_OAK_DOOR);
-        this.invalidSpawn.add(Blocks.IRON_DOOR);
-        this.invalidSpawn.add(Blocks.JUNGLE_DOOR);
-        this.invalidSpawn.add(Blocks.SPRUCE_DOOR);
-        this.invalidSpawn.add(Blocks.BRICK_BLOCK);
-        this.invalidSpawn.add(Blocks.CLAY);
-        this.invalidSpawn.add(Blocks.WATER);
-        this.invalidSpawn.add(Blocks.LOG);
-        this.invalidSpawn.add(Blocks.LOG2);
-
-        this.type = new Fallout(this.putter, this.skyStoneDefinition);
+            invalidSpawn.clear();
+            skyStoneDefinition.maybeBlock().ifPresent(invalidSpawn::add);
+            invalidSpawn.add(Blocks.PLANKS);
+            invalidSpawn.add(Blocks.IRON_DOOR);
+            invalidSpawn.add(Blocks.IRON_BARS);
+            invalidSpawn.add(Blocks.OAK_DOOR);
+            invalidSpawn.add(Blocks.ACACIA_DOOR);
+            invalidSpawn.add(Blocks.BIRCH_DOOR);
+            invalidSpawn.add(Blocks.DARK_OAK_DOOR);
+            invalidSpawn.add(Blocks.JUNGLE_DOOR);
+            invalidSpawn.add(Blocks.SPRUCE_DOOR);
+            invalidSpawn.add(Blocks.BRICK_BLOCK);
+            invalidSpawn.add(Blocks.CLAY);
+            invalidSpawn.add(Blocks.WATER);
+            invalidSpawn.add(Blocks.LOG);
+            invalidSpawn.add(Blocks.LOG2);
+        }
     }
 
-    boolean spawnMeteorite(final IMeteoriteWorld w, final NBTTagCompound meteoriteBlob) {
-        this.settings = meteoriteBlob;
+    public MeteoritePlacer(final IMeteoriteWorld world, final long seed, final int x, final int y, final int z) {
+        initializeSpawnLists();
+        this.seed = seed;
+        Random rng = new Random(seed);
+        this.world = world;
+        this.x = x;
+        this.y = y;
+        this.z = z;
+        this.meteoriteSize = (rng.nextDouble() * 6.0) + 2;
+        this.craterSize = this.meteoriteSize * 2 + 5;
+        this.squaredMeteoriteSize = this.meteoriteSize * this.meteoriteSize;
+        this.squaredCraterSize = this.craterSize * this.craterSize;
 
-        final int x = this.settings.getInteger("x");
-        final int y = this.settings.getInteger("y");
-        final int z = this.settings.getInteger("z");
+        this.type = new Fallout(this.putter, skyStoneDefinition);
+
+        int skyMode = 0;
+        for (int i = x - 15; i < x + 15; i++) {
+            for (int j = y - 15; j < y + 11; j++) {
+                for (int k = z - 15; k < z + 15; k++) {
+                    if (world.canBlockSeeTheSky(i, j, k)) {
+                        skyMode++;
+                    }
+                }
+            }
+        }
+        boolean solid = true;
+        for (int j = y - 15; j < y - 1; j++) {
+            if (world.getBlock(x, j, z) == Platform.AIR_BLOCK) {
+                solid = false;
+            }
+        }
+        if (!solid) {
+            skyMode = 0;
+        }
+        this.skyMode = skyMode;
+
+        Block blk = world.getBlock(x, y, z);
+        this.settings = new NBTTagCompound();
+        this.settings.setLong("seed", seed);
+        this.settings.setInteger("x", x);
+        this.settings.setInteger("y", y);
+        this.settings.setInteger("z", z);
+        this.settings.setInteger("blk", Block.getIdFromBlock(blk));
+        this.settings.setInteger("skyMode", skyMode);
+
+        this.settings.setDouble("real_sizeOfMeteorite", this.meteoriteSize);
+        this.settings.setDouble("realCrater", this.craterSize);
+        this.settings.setDouble("sizeOfMeteorite", this.squaredMeteoriteSize);
+        this.settings.setDouble("crater", this.squaredCraterSize);
+
+        this.settings.setBoolean("lava", rng.nextFloat() > 0.9F);
+    }
+
+    public MeteoritePlacer(final IMeteoriteWorld world, final NBTTagCompound meteoriteBlob) {
+        Random rng = new Random();
+        this.settings = meteoriteBlob;
+        long dataSeed = meteoriteBlob.getLong("seed");
+        // Meteor generated without a pre-set seed, from an older version
+        if (dataSeed == 0) {
+            // Generate a position-based seed
+            Platform.seedFromGrid(
+                    rng, world.getWorld().getSeed(), meteoriteBlob.getInteger("x"), meteoriteBlob.getInteger("z"));
+            while (dataSeed == 0) {
+                dataSeed = rng.nextLong();
+            }
+        }
+        this.seed = dataSeed;
+        rng.setSeed(dataSeed);
+
+        this.world = world;
+        this.x = this.settings.getInteger("x");
+        this.y = this.settings.getInteger("y");
+        this.z = this.settings.getInteger("z");
+
+        this.type = new Fallout(this.putter, skyStoneDefinition);
 
         this.meteoriteSize = this.settings.getDouble("real_sizeOfMeteorite");
-        this.realCrater = this.settings.getDouble("realCrater");
+        this.craterSize = this.settings.getDouble("realCrater");
         this.squaredMeteoriteSize = this.settings.getDouble("sizeOfMeteorite");
-        this.crater = this.settings.getDouble("crater");
+        this.squaredCraterSize = this.settings.getDouble("crater");
+        this.skyMode = this.settings.getInteger("skyMode");
+    }
 
+    void spawnMeteorite() {
         final Block blk = Block.getBlockById(this.settings.getInteger("blk"));
 
         if (blk == Blocks.SAND) {
-            this.type = new FalloutSand(w, x, y, z, this.putter, this.skyStoneDefinition);
+            this.type = new FalloutSand(world, x, y, z, this.putter, skyStoneDefinition);
         } else if (blk == Blocks.HARDENED_CLAY) {
-            this.type = new FalloutCopy(w, x, y, z, this.putter, this.skyStoneDefinition);
+            this.type = new FalloutCopy(world, x, y, z, this.putter, skyStoneDefinition);
         } else if (blk == Blocks.ICE || blk == Blocks.SNOW) {
-            this.type = new FalloutSnow(w, x, y, z, this.putter, this.skyStoneDefinition);
+            this.type = new FalloutSnow(world, x, y, z, this.putter, skyStoneDefinition);
         }
 
-        final int skyMode = this.settings.getInteger("skyMode");
-
-        // creator
+        // Crater
         if (skyMode > 10) {
-            this.placeCrater(w, x, y, z);
+            this.placeCrater(world, x, y, z);
         }
 
-        this.placeMeteorite(w, x, y, z);
+        this.placeMeteorite(world, x, y, z);
 
         // collapse blocks...
         if (skyMode > 3) {
-            this.decay(w, x, y, z);
+            this.decay(world, x, y, z);
         }
 
-        w.done();
-        return true;
+        world.done();
     }
 
     private void placeCrater(final IMeteoriteWorld w, final int x, final int y, final int z) {
@@ -181,7 +259,8 @@ public final class MeteoritePlacer {
 
         for (final Object o : w.getWorld()
                 .getEntitiesWithinAABB(EntityItem.class,
-                        new AxisAlignedBB(w.minX(x - 30), y - 5, w.minZ(z - 30), w.maxX(x + 30), y + 30, w.maxZ(z + 30)))) {
+                        new AxisAlignedBB(
+                                w.minX(x - 30), y - 5, w.minZ(z - 30), w.maxX(x + 30), y + 30, w.maxZ(z + 30)))) {
             final Entity e = (Entity) o;
             e.setDead();
         }
@@ -190,94 +269,65 @@ public final class MeteoritePlacer {
     private void placeMeteorite(final IMeteoriteWorld w, final int x, final int y, final int z) {
 
         // spawn meteor
-        this.skyStoneDefinition.maybeBlock().ifPresent(block -> this.placeMeteoriteSkyStone(w, x, y, z, block));
+        skyStoneDefinition.maybeBlock().ifPresent(block -> this.placeMeteoriteSkyStone(w, x, y, z, block));
 
         if (AEConfig.instance().isFeatureEnabled(AEFeature.SPAWN_PRESSES_IN_METEORITES)) {
-            this.skyChestDefinition.maybeBlock().ifPresent(block -> this.putter.put(w, x, y, z,
+            skyChestDefinition.maybeBlock().ifPresent(block -> this.putter.put(w, x, y, z,
                             block.getDefaultState().withProperty(BlockSkyChest.NATURAL, true)));
 
             final TileEntity te = w.getTileEntity(x, y, z);
             final InventoryAdaptor ap = InventoryAdaptor.getAdaptor(te, EnumFacing.UP);
             if (ap != null) {
-                int primary = Math.max(1, (int) (Math.random() * 4));
+                final Random lootRng = new Random(this.seed + SEED_OFFSET_CHEST_LOOT);
 
-                if (primary > 3) // in case math breaks...
-                {
-                    primary = 3;
+                final ArrayList<ItemStack> pressTypes = new ArrayList<>(4);
+                final IMaterials materials = AEApi.instance().definitions().materials();
+                materials.calcProcessorPress().maybeStack(1).ifPresent(pressTypes::add);
+                materials.engProcessorPress().maybeStack(1).ifPresent(pressTypes::add);
+                materials.logicProcessorPress().maybeStack(1).ifPresent(pressTypes::add);
+                materials.siliconPress().maybeStack(1).ifPresent(pressTypes::add);
+
+                final int pressCount = 1 + lootRng.nextInt(3);
+                final int removeCount = Math.max(0, pressTypes.size() - pressCount);
+
+                // Make pressTypes contain pressCount random presses
+                for (int zz = 0; zz < removeCount; zz++) {
+                    pressTypes.remove(lootRng.nextInt(pressTypes.size()));
                 }
 
-                for (int zz = 0; zz < primary; zz++) {
-                    int r;
-                    boolean duplicate;
-
-                    do {
-                        duplicate = false;
-
-                        if (Math.random() > PRESSES_SPAWN_CHANCE) {
-                            r = WorldData.instance().storageData().getNextOrderedValue("presses");
-                        } else {
-                            r = (int) (Math.random() * 1000);
-                        }
-
-                        ItemStack toAdd = ItemStack.EMPTY;
-                        final IMaterials materials = AEApi.instance().definitions().materials();
-
-                        switch (r % 5) {
-                            case 0:
-                                toAdd = materials.calcProcessorPress().maybeStack(1).orElse(ItemStack.EMPTY);
-                                break;
-                            case 1:
-                                toAdd = materials.engProcessorPress().maybeStack(1).orElse(ItemStack.EMPTY);
-                                break;
-                            case 2:
-                                toAdd = materials.logicProcessorPress().maybeStack(1).orElse(ItemStack.EMPTY);
-                                break;
-                            case 3:
-                                toAdd = materials.iridiumProcessorPress().maybeStack(1).orElse(ItemStack.EMPTY);
-                                break;
-                            case 4:
-                                toAdd = materials.siliconPress().maybeStack(1).orElse(ItemStack.EMPTY);
-                                break;
-                            default:
-                        }
-
-                        if (!toAdd.isEmpty()) {
-                            if (ap.simulateRemove(1, toAdd, null).isEmpty()) {
-                                ap.addItems(toAdd);
-                            } else {
-                                duplicate = true;
-                            }
-                        }
-                    }
-                    while (duplicate);
+                for (ItemStack toAdd : pressTypes) {
+                    ap.addItems(toAdd);
                 }
 
-                final int secondary = Math.max(1, (int) (Math.random() * 3));
-                for (int zz = 0; zz < secondary; zz++) {
-                    switch ((int) (Math.random() * 1000) % 3) {
+                final List<ItemStack> nuggetLoot = new ArrayList<>();
+                nuggetLoot.addAll(OreDictionary.getOres("nuggetIron"));
+                nuggetLoot.addAll(OreDictionary.getOres("nuggetCopper"));
+                nuggetLoot.addAll(OreDictionary.getOres("nuggetTin"));
+                nuggetLoot.addAll(OreDictionary.getOres("nuggetSilver"));
+                nuggetLoot.addAll(OreDictionary.getOres("nuggetLead"));
+                nuggetLoot.addAll(OreDictionary.getOres("nuggetPlatinum"));
+                nuggetLoot.addAll(OreDictionary.getOres("nuggetNickel"));
+                nuggetLoot.addAll(OreDictionary.getOres("nuggetAluminium"));
+                nuggetLoot.addAll(OreDictionary.getOres("nuggetElectrum"));
+                nuggetLoot.add(new ItemStack(net.minecraft.init.Items.GOLD_NUGGET));
+                final int secondaryCount = 1 + lootRng.nextInt(3);
+                for (int zz = 0; zz < secondaryCount; zz++) {
+                    switch (lootRng.nextInt(3)) {
                         case 0:
-                            final int amount = (int) ((Math.random() * SKYSTONE_SPAWN_LIMIT) + 1);
-                            this.skyStoneDefinition.maybeStack(amount).ifPresent(ap::addItems);
+                            final int amount = 1 + lootRng.nextInt(SKYSTONE_SPAWN_LIMIT);
+                            skyStoneDefinition.maybeStack(amount).ifPresent(ap::addItems);
                             break;
                         case 1:
-                            final List<ItemStack> possibles = new ArrayList<>();
-                            possibles.addAll(OreDictionary.getOres("nuggetIron"));
-                            possibles.addAll(OreDictionary.getOres("nuggetCopper"));
-                            possibles.addAll(OreDictionary.getOres("nuggetTin"));
-                            possibles.addAll(OreDictionary.getOres("nuggetSilver"));
-                            possibles.addAll(OreDictionary.getOres("nuggetLead"));
-                            possibles.addAll(OreDictionary.getOres("nuggetPlatinum"));
-                            possibles.addAll(OreDictionary.getOres("nuggetNickel"));
-                            possibles.addAll(OreDictionary.getOres("nuggetAluminium"));
-                            possibles.addAll(OreDictionary.getOres("nuggetElectrum"));
-                            possibles.add(new ItemStack(net.minecraft.init.Items.GOLD_NUGGET));
-
-                            ItemStack nugget = Platform.pickRandom(possibles);
-                            if (!nugget.isEmpty()) {
+                            ItemStack nugget = nuggetLoot.get(lootRng.nextInt(nuggetLoot.size()));
+                            if (nugget != null) {
                                 nugget = nugget.copy();
-                                nugget.setCount((int) (Math.random() * 12) + 1);
+                                nugget.setCount(1 + lootRng.nextInt(12));
                                 ap.addItems(nugget);
                             }
+                            break;
+                        case 2:
+                        default:
+                            // Add nothing
                             break;
                     }
                 }
@@ -307,6 +357,7 @@ public final class MeteoritePlacer {
     }
 
     private void decay(final IMeteoriteWorld w, final int x, final int y, final int z) {
+        final Random decayRng = new Random(this.seed + SEED_OFFSET_DECAY);
         double randomShit = 0;
 
         final int meteorXLength = w.minX(x - 30);
@@ -330,7 +381,7 @@ public final class MeteoritePlacer {
                             final IBlockState meta_b = w.getBlockState(i, j + 1, k);
 
                             w.setBlock(i, j, k, meta_b, 3);
-                        } else if (randomShit < 100 * this.crater) {
+                        } else if (randomShit < 100 * this.squaredCraterSize) {
                             final double dx = i - x;
                             final double dy = j - y;
                             final double dz = k - z;
@@ -338,12 +389,13 @@ public final class MeteoritePlacer {
 
                             final Block xf = w.getBlock(i, j - 1, k);
                             if (!xf.isReplaceable(w.getWorld(), new BlockPos(i, j - 1, k))) {
-                                final double extraRange = Math.random() * 0.6;
-                                final double height = this.crater * (extraRange + 0.2) - Math.abs(dist - this.crater * 1.7);
+                                final double extraRange = decayRng.nextDouble() * 0.6;
+                                final double height = this.squaredCraterSize * (extraRange + 0.2)
+                                        - Math.abs(dist - this.squaredCraterSize * 1.7);
 
-                                if (xf != blk && height > 0 && Math.random() > 0.6) {
+                                if (xf != blk && height > 0 && decayRng.nextFloat() > 0.6F) {
                                     randomShit++;
-                                    this.type.getRandomFall(w, i, j, k);
+                                    this.type.getRandomFall(decayRng.nextDouble(), w, i, j, k);
                                 }
                             }
                         }
@@ -351,13 +403,13 @@ public final class MeteoritePlacer {
                         // decay.
                         final Block blk_b = w.getBlock(i, j + 1, k);
                         if (blk_b == Platform.AIR_BLOCK) {
-                            if (Math.random() > 0.4) {
+                            if (decayRng.nextFloat() > 0.4F) {
                                 final double dx = i - x;
                                 final double dy = j - y;
                                 final double dz = k - z;
 
-                                if (dx * dx + dy * dy + dz * dz < this.crater * 1.6) {
-                                    this.type.getRandomInset(w, i, j, k);
+                                if (dx * dx + dy * dy + dz * dz < this.squaredCraterSize * 1.6) {
+                                    this.type.getRandomInset(decayRng.nextDouble(), w, i, j, k);
                                 }
                             }
                         }
@@ -367,43 +419,23 @@ public final class MeteoritePlacer {
         }
     }
 
-    double getSqDistance(final int x, final int z) {
-        final int chunkX = this.settings.getInteger("x") - x;
-        final int chunkZ = this.settings.getInteger("z") - z;
+    public boolean spawnMeteoriteCenter() {
 
-        return chunkX * chunkX + chunkZ * chunkZ;
-    }
-
-    public boolean spawnMeteorite(final IMeteoriteWorld w, final int x, final int y, final int z) {
-
-        if (!w.isNether()) {
+        if (!world.isNether()) {
             return false;
         }
 
-        Block blk = w.getBlock(x, y, z);
-        if (!this.validSpawn.contains(blk)) {
+        Block blk = world.getBlock(x, y, z);
+        if (!validSpawn.contains(blk)) {
             return false; // must spawn on a valid block..
         }
 
-        this.settings = new NBTTagCompound();
-        this.settings.setInteger("x", x);
-        this.settings.setInteger("y", y);
-        this.settings.setInteger("z", z);
-        this.settings.setInteger("blk", Block.getIdFromBlock(blk));
-
-        this.settings.setDouble("real_sizeOfMeteorite", this.meteoriteSize);
-        this.settings.setDouble("realCrater", this.realCrater);
-        this.settings.setDouble("sizeOfMeteorite", this.squaredMeteoriteSize);
-        this.settings.setDouble("crater", this.crater);
-
-        this.settings.setBoolean("lava", Math.random() > 0.9);
-
         if (blk == Blocks.SAND) {
-            this.type = new FalloutSand(w, x, y, z, this.putter, this.skyStoneDefinition);
+            this.type = new FalloutSand(world, x, y, z, this.putter, skyStoneDefinition);
         } else if (blk == Blocks.HARDENED_CLAY) {
-            this.type = new FalloutCopy(w, x, y, z, this.putter, this.skyStoneDefinition);
+            this.type = new FalloutCopy(world, x, y, z, this.putter, skyStoneDefinition);
         } else if (blk == Blocks.ICE || blk == Blocks.SNOW) {
-            this.type = new FalloutSnow(w, x, y, z, this.putter, this.skyStoneDefinition);
+            this.type = new FalloutSnow(world, x, y, z, this.putter, skyStoneDefinition);
         }
 
         int realValidBlocks = 0;
@@ -411,8 +443,8 @@ public final class MeteoritePlacer {
         for (int i = x - 6; i < x + 6; i++) {
             for (int j = y - 6; j < y + 6; j++) {
                 for (int k = z - 6; k < z + 6; k++) {
-                    blk = w.getBlock(i, j, k);
-                    if (this.validSpawn.contains(blk)) {
+                    blk = world.getBlock(i, j, k);
+                    if (validSpawn.contains(blk)) {
                         realValidBlocks++;
                     }
                 }
@@ -423,11 +455,11 @@ public final class MeteoritePlacer {
         for (int i = x - 15; i < x + 15; i++) {
             for (int j = y - 15; j < y + 15; j++) {
                 for (int k = z - 15; k < z + 15; k++) {
-                    blk = w.getBlock(i, j, k);
-                    if (this.invalidSpawn.contains(blk)) {
+                    blk = world.getBlock(i, j, k);
+                    if (invalidSpawn.contains(blk)) {
                         return false;
                     }
-                    if (this.validSpawn.contains(blk)) {
+                    if (validSpawn.contains(blk)) {
                         validBlocks++;
                     }
                 }
@@ -436,47 +468,24 @@ public final class MeteoritePlacer {
 
         final int minBlocks = 200;
         if (validBlocks > minBlocks && realValidBlocks > 80) {
-            // we can spawn here!
-
-            int skyMode = 0;
-
-            for (int i = x - 15; i < x + 15; i++) {
-                for (int j = y - 15; j < y + 11; j++) {
-                    for (int k = z - 15; k < z + 15; k++) {
-                        if (w.canBlockSeeTheSky(i, j, k)) {
-                            skyMode++;
-                        }
-                    }
-                }
-            }
-
-            boolean solid = true;
-            for (int j = y - 15; j < y - 1; j++) {
-                if (w.getBlock(x, j, z) == Platform.AIR_BLOCK) {
-                    solid = false;
-                }
-            }
-
-            if (!solid) {
-                skyMode = 0;
-            }
-
-            // creator
+            // We can spawn here!
+            // Crater
             if (skyMode > 10) {
-                this.placeCrater(w, x, y, z);
+                this.placeCrater(world, x, y, z);
             }
 
-            this.placeMeteorite(w, x, y, z);
+            this.placeMeteorite(world, x, y, z);
 
             // collapse blocks...
             if (skyMode > 3) {
-                this.decay(w, x, y, z);
+                this.decay(world, x, y, z);
             }
 
-            this.settings.setInteger("skyMode", skyMode);
-            w.done();
+            world.done();
 
-            WorldData.instance().spawnData().addNearByMeteorites(w.getWorld().provider.getDimension(), x >> 4, z >> 4, this.settings);
+            WorldData.instance()
+                    .spawnData()
+                    .addNearByMeteorites(world.getWorld().provider.getDimension(), x >> 4, z >> 4, this.settings);
             return true;
         }
         return false;

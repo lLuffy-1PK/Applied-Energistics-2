@@ -37,30 +37,28 @@ public class Fallout {
         return 0;
     }
 
-    public void getRandomFall(final IMeteoriteWorld w, final int x, final int y, final int z) {
-        final double a = Math.random();
-        if (a > 0.9) {
+    public void getRandomFall(final double random, final IMeteoriteWorld w, final int x, final int y, final int z) {
+        if (random > 0.9) {
             this.putter.put(w, x, y, z, Blocks.STONE);
-        } else if (a > 0.8) {
+        } else if (random > 0.8) {
             this.putter.put(w, x, y, z, Blocks.COBBLESTONE);
-        } else if (a > 0.7) {
+        } else if (random > 0.7) {
             this.putter.put(w, x, y, z, Blocks.DIRT);
         } else {
             this.putter.put(w, x, y, z, Blocks.GRAVEL);
         }
     }
 
-    public void getRandomInset(final IMeteoriteWorld w, final int x, final int y, final int z) {
-        final double a = Math.random();
-        if (a > 0.9) {
+    public void getRandomInset(final double random, final IMeteoriteWorld w, final int x, final int y, final int z) {
+        if (random > 0.9) {
             this.putter.put(w, x, y, z, Blocks.COBBLESTONE);
-        } else if (a > 0.8) {
+        } else if (random > 0.8) {
             this.putter.put(w, x, y, z, Blocks.STONE);
-        } else if (a > 0.7) {
+        } else if (random > 0.7) {
             this.putter.put(w, x, y, z, Blocks.GRASS);
-        } else if (a > 0.6) {
+        } else if (random > 0.6) {
             this.skyStoneDefinition.maybeBlock().ifPresent(block -> this.putter.put(w, x, y, z, block));
-        } else if (a > 0.5) {
+        } else if (random > 0.5) {
             this.putter.put(w, x, y, z, Blocks.GRAVEL);
         } else {
             this.putter.put(w, x, y, z, Platform.AIR_BLOCK);

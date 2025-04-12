@@ -32,35 +32,37 @@ public class FalloutCopy extends Fallout {
     private final IBlockState block;
     private final MeteoriteBlockPutter putter;
 
-    public FalloutCopy(final IMeteoriteWorld w, final int x, final int y, final int z, final MeteoriteBlockPutter putter, final IBlockDefinition skyStoneDefinition) {
+    public FalloutCopy(
+            final IMeteoriteWorld w,
+            final int x,
+            final int y,
+            final int z,
+            final MeteoriteBlockPutter putter,
+            final IBlockDefinition skyStoneDefinition) {
         super(putter, skyStoneDefinition);
         this.putter = putter;
         this.block = w.getBlockState(x, y, z);
     }
 
     @Override
-    public void getRandomFall(final IMeteoriteWorld w, final int x, final int y, final int z) {
-        final double a = Math.random();
-        if (a > SPECIFIED_BLOCK_THRESHOLD) {
+    public void getRandomFall(final double random, final IMeteoriteWorld w, final int x, final int y, final int z) {
+        if (random > SPECIFIED_BLOCK_THRESHOLD) {
             this.putter.put(w, x, y, z, this.block);
         } else {
-            this.getOther(w, x, y, z, a);
+            this.getOther(w, x, y, z, random);
         }
     }
 
-    public void getOther(final IMeteoriteWorld w, final int x, final int y, final int z, final double a) {
-
-    }
+    public void getOther(final IMeteoriteWorld w, final int x, final int y, final int z, final double a) {}
 
     @Override
-    public void getRandomInset(final IMeteoriteWorld w, final int x, final int y, final int z) {
-        final double a = Math.random();
-        if (a > SPECIFIED_BLOCK_THRESHOLD) {
+    public void getRandomInset(final double random, final IMeteoriteWorld w, final int x, final int y, final int z) {
+        if (random > SPECIFIED_BLOCK_THRESHOLD) {
             this.putter.put(w, x, y, z, this.block);
-        } else if (a > AIR_BLOCK_THRESHOLD) {
+        } else if (random > AIR_BLOCK_THRESHOLD) {
             this.putter.put(w, x, y, z, Platform.AIR_BLOCK);
         } else {
-            this.getOther(w, x, y, z, a - BLOCK_THRESHOLD_STEP);
+            this.getOther(w, x, y, z, random - BLOCK_THRESHOLD_STEP);
         }
     }
 }

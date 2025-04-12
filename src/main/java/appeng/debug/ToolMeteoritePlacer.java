@@ -39,8 +39,8 @@ public class ToolMeteoritePlacer extends AEBaseItem {
             return EnumActionResult.PASS;
         }
 
-        final MeteoritePlacer mp = new MeteoritePlacer();
-        final boolean worked = mp.spawnMeteorite(new StandardWorld(world), pos.getX(), pos.getY(), pos.getZ());
+        final MeteoritePlacer mp = new MeteoritePlacer(new StandardWorld(world), System.currentTimeMillis(), pos.getX(), pos.getY(), pos.getZ());
+        final boolean worked = mp.spawnMeteoriteCenter();
 
         if (!worked) {
             player.sendMessage(new TextComponentString("Un-suitable Location."));
