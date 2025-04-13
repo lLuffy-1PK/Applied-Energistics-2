@@ -24,11 +24,15 @@ import appeng.core.AEConfig;
 import appeng.core.features.registries.WorldGenRegistry;
 import appeng.core.worlddata.WorldData;
 import appeng.hooks.TickHandler;
+import appeng.services.compass.ServerCompassService;
 import appeng.util.IWorldCallable;
 import appeng.util.Platform;
 import appeng.worldgen.meteorite.ChunkOnly;
+import com.github.bsideup.jabel.Desugar;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraft.world.gen.IChunkGenerator;
 import net.minecraftforge.fml.common.IWorldGenerator;
@@ -75,21 +79,16 @@ public final class MeteoriteWorldGen implements IWorldGenerator {
                 TickHandler.INSTANCE.addCallable(world, new ExistingMeteoriteSpawn(chunkX, chunkZ));
             }
         } else {
-            WorldData.instance().compassData().service().updateArea(world, chunkX, chunkZ);
+//            WorldData.instance().compassData().service().updateArea(world, chunkX, chunkZ);
+            ServerCompassService.updateArea((WorldServer) world, new ChunkPos(chunkX, chunkZ));
         }
     }
 
     /**
      * Spawns blocks for meteorites that were previously generated in neighboring chunks
      */
-    private static final class ExistingMeteoriteSpawn implements IWorldCallable<Object> {
-        private final int chunkX;
-        private final int chunkZ;
-
-        public ExistingMeteoriteSpawn(int chunkX, int chunkZ) {
-            this.chunkX = chunkX;
-            this.chunkZ = chunkZ;
-        }
+    @Desugar
+    private record ExistingMeteoriteSpawn(int chunkX, int chunkZ) implements IWorldCallable<Object> {
 
         private Iterable<NBTTagCompound> getNearByMeteorites(final World w, final int chunkX, final int chunkZ) {
             return WorldData.instance().spawnData().getNearByMeteorites(w.provider.getDimension(), chunkX, chunkZ);
@@ -104,25 +103,14 @@ public final class MeteoriteWorldGen implements IWorldGenerator {
             }
 
             WorldData.instance().spawnData().setGenerated(world.provider.getDimension(), chunkX, chunkZ);
-            WorldData.instance().compassData().service().updateArea(world, chunkX, chunkZ);
+//            WorldData.instance().compassData().service().updateArea(world, chunkX, chunkZ);
+            ServerCompassService.updateArea((WorldServer) world, new ChunkPos(chunkX, chunkZ));
             return null;
         }
     }
 
-    private static final class MeteoriteSpawn implements IWorldCallable<Object> {
-
-        private final int x;
-        private final int z;
-        private final int depth;
-        private final long seed;
-
-        public MeteoriteSpawn(final int x, final int depth, final int z, final long seed) {
-            this.x = x;
-            this.z = z;
-            this.depth = depth;
-            this.seed = seed;
-        }
-
+    @Desugar
+    private record MeteoriteSpawn(int x, int depth, int z, long seed) implements IWorldCallable<Object> {
         private boolean tryMeteorite(final World w) {
             int depth = this.depth;
             for (int tries = 0; tries < 20; tries++) {
@@ -169,7 +157,8 @@ public final class MeteoriteWorldGen implements IWorldGenerator {
             this.tryMeteorite(world);
 
             WorldData.instance().spawnData().setGenerated(world.provider.getDimension(), chunkX, chunkZ);
-            WorldData.instance().compassData().service().updateArea(world, chunkX, chunkZ);
+//            WorldData.instance().compassData().service().updateArea(world, chunkX, chunkZ);
+            ServerCompassService.updateArea((WorldServer) world, new ChunkPos(chunkX, chunkZ));
 
             return null;
         }

@@ -19,6 +19,7 @@
 package appeng.services.compass;
 
 
+@Deprecated
 public interface ICompassCallback {
 
     /**

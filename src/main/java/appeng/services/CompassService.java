@@ -40,7 +40,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.*;
 
-
+@Deprecated
 public final class CompassService {
     private static final int CHUNK_SIZE = 16;
 

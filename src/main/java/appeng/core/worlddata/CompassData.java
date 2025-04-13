@@ -31,6 +31,7 @@ import java.io.File;
  * @version rv3 - 30.05.2015
  * @since rv3 30.05.2015
  */
+@Deprecated
 final class CompassData implements IWorldCompassData, IOnWorldStoppable {
     @Nonnull
     private final CompassService service;

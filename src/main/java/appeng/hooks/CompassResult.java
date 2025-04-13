@@ -18,7 +18,7 @@
 
 package appeng.hooks;
 
-
+@Deprecated
 public class CompassResult {
 
     private final boolean hasResult;
