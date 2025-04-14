@@ -77,7 +77,7 @@ public final class ServerCompassService {
     }
 
     private static ChunkPos findClosestMeteoriteChunk(WorldServer world, ChunkPos chunkPos) {
-        var cr = NewCompassRegion.get(world, chunkPos);
+        var cr = CompassRegion.get(world, chunkPos);
         var cx = chunkPos.x;
         var cz = chunkPos.z;
 
@@ -159,7 +159,7 @@ public final class ServerCompassService {
     public static void notifyBlockChange(WorldServer world, BlockPos pos) {
         var chunk = world.getChunk(pos);
         var chunkPos = chunk.getPos();
-        var compassRegion = NewCompassRegion.get(world, chunkPos);
+        var compassRegion = CompassRegion.get(world, chunkPos);
 
         int sectionIndex = pos.getY() >> 4;
         var section = chunk.getBlockStorageArray()[sectionIndex];
@@ -174,7 +174,7 @@ public final class ServerCompassService {
      * Scans a full chunk for the compass target.
      */
     public static void updateArea(WorldServer world, ChunkPos chunkPos) {
-        var compassRegion = NewCompassRegion.get(world, chunkPos);
+        var compassRegion = CompassRegion.get(world, chunkPos);
         var chunk = world.getChunk(chunkPos.x, chunkPos.z);
         ExtendedBlockStorage[] sections = chunk.getBlockStorageArray();
 
@@ -188,7 +188,7 @@ public final class ServerCompassService {
      *
      * @return true if the compass target is in this section, false otherwise
      */
-    private static boolean updateArea(NewCompassRegion compassRegion, @Nullable ExtendedBlockStorage section, ChunkPos chunkPos, int sectionIndex) {
+    private static boolean updateArea(CompassRegion compassRegion, @Nullable ExtendedBlockStorage section, ChunkPos chunkPos, int sectionIndex) {
         int cx = chunkPos.x;
         int cz = chunkPos.z;
 
