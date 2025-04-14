@@ -1,29 +1,30 @@
 package appeng.services.compass;
 
-import javax.annotation.Nullable;
-import java.util.Optional;
-import java.util.concurrent.TimeUnit;
-
 import appeng.api.AEApi;
 import appeng.block.storage.BlockSkyChest;
 import appeng.hooks.CompassManager;
-import net.minecraft.block.Block;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.world.WorldServer;
-
 import appeng.tile.storage.TileSkyChest;
 import com.github.bsideup.jabel.Desugar;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import net.minecraft.block.Block;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
+import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 import org.jetbrains.annotations.NotNull;
 
+import javax.annotation.Nullable;
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
+
 public final class ServerCompassService {
     private static final int MAX_RANGE = 174;
     private static final int CHUNK_SIZE = 16;
+
+    private ServerCompassService() {}
 
     @Desugar
     private record Query(WorldServer world, ChunkPos chunk) {}

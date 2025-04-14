@@ -20,19 +20,18 @@ package appeng.core.worlddata;
 
 
 import appeng.core.AEConfig;
-import appeng.services.CompassService;
-import appeng.services.compass.CompassThreadFactory;
+import appeng.services.compass.converter.CompassDataConverter;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.common.DimensionManager;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.util.List;
-import java.util.concurrent.ThreadFactory;
 
 
 /**
@@ -57,7 +56,6 @@ public final class WorldData implements IWorldData {
 
     private final IWorldPlayerData playerData;
     private final IWorldGridStorageData storageData;
-    private final IWorldCompassData compassData;
     private final IWorldSpawnData spawnData;
 
     private final List<IOnWorldStartable> startables;
@@ -66,6 +64,8 @@ public final class WorldData implements IWorldData {
     private final File ae2directory;
     private final File spawnDirectory;
     private final File compassDirectory;
+
+    private CompassDataConverter compassDataConverter;
 
     private final Configuration sharedConfig;
 
@@ -83,19 +83,14 @@ public final class WorldData implements IWorldData {
         final PlayerData playerData = new PlayerData(this.sharedConfig);
         final StorageData storageData = new StorageData(this.sharedConfig);
 
-        final ThreadFactory compassThreadFactory = new CompassThreadFactory();
-        final CompassService compassService = new CompassService(this.compassDirectory, compassThreadFactory);
-        final CompassData compassData = new CompassData(this.compassDirectory, compassService);
-
         final IWorldSpawnData spawnData = new SpawnData(this.spawnDirectory);
 
         this.playerData = playerData;
         this.storageData = storageData;
-        this.compassData = compassData;
         this.spawnData = spawnData;
 
         this.startables = Lists.newArrayList(playerData, storageData);
-        this.stoppables = Lists.newArrayList(playerData, storageData, compassData);
+        this.stoppables = Lists.newArrayList(playerData, storageData);
     }
 
     /**
@@ -147,6 +142,11 @@ public final class WorldData implements IWorldData {
         }
 
         this.startables.clear();
+
+        // create save-specific compass converter
+        final var compassDataConverter = new CompassDataConverter(this.compassDirectory);
+        this.compassDataConverter = compassDataConverter;
+        MinecraftForge.EVENT_BUS.register(compassDataConverter);
     }
 
     @Override
@@ -161,6 +161,7 @@ public final class WorldData implements IWorldData {
         Preconditions.checkNotNull(instance);
 
         this.stoppables.clear();
+        MinecraftForge.EVENT_BUS.unregister(instance.compassDataConverter());
         instance = null;
     }
 
@@ -178,13 +179,13 @@ public final class WorldData implements IWorldData {
 
     @Nonnull
     @Override
-    public IWorldCompassData compassData() {
-        return this.compassData;
+    public IWorldSpawnData spawnData() {
+        return this.spawnData;
     }
 
     @Nonnull
     @Override
-    public IWorldSpawnData spawnData() {
-        return this.spawnData;
+    public CompassDataConverter compassDataConverter() {
+        return this.compassDataConverter;
     }
 }
