@@ -169,6 +169,7 @@ public final class MeteoritePlacer {
     }
 
     public MeteoritePlacer(final IMeteoriteWorld world, final NBTTagCompound meteoriteBlob) {
+        initializeSpawnLists();
         Random rng = new Random();
         this.settings = meteoriteBlob;
         long dataSeed = meteoriteBlob.getLong("seed");
