@@ -2,7 +2,6 @@ package appeng.services.compass;
 
 import appeng.api.AEApi;
 import appeng.block.storage.BlockSkyChest;
-import appeng.hooks.CompassManager;
 import appeng.tile.storage.TileSkyChest;
 import com.github.bsideup.jabel.Desugar;
 import com.google.common.cache.CacheBuilder;
@@ -78,12 +77,11 @@ public final class ServerCompassService {
     }
 
     private static ChunkPos findClosestMeteoriteChunk(WorldServer world, ChunkPos chunkPos) {
-        var cr = CompassRegion.get(world, chunkPos);
         var cx = chunkPos.x;
         var cz = chunkPos.z;
 
         // Am I standing on it?
-        if (cr.hasCompassTarget(cx, cz)) {
+        if (CompassRegion.get(world, chunkPos).hasCompassTarget(cx, cz)) {
             return chunkPos;
         }
 
@@ -99,7 +97,7 @@ public final class ServerCompassService {
             int chosen_z = cz;
 
             for (int z = minZ; z <= maxZ; z++) {
-                if (cr.hasCompassTarget(minX, z)) {
+                if (CompassRegion.get(world, minX, z).hasCompassTarget(minX, z)) {
                     final int closeness = dist(cx, cz, minX, z);
                     if (closeness < closest) {
                         closest = closeness;
@@ -108,7 +106,7 @@ public final class ServerCompassService {
                     }
                 }
 
-                if (cr.hasCompassTarget(maxX, z)) {
+                if (CompassRegion.get(world, maxX, z).hasCompassTarget(maxX, z)) {
                     final int closeness = dist(cx, cz, maxX, z);
                     if (closeness < closest) {
                         closest = closeness;
@@ -119,7 +117,7 @@ public final class ServerCompassService {
             }
 
             for (int x = minX + 1; x < maxX; x++) {
-                if (cr.hasCompassTarget(x, minZ)) {
+                if (CompassRegion.get(world, x, minZ).hasCompassTarget(x, minZ)) {
                     final int closeness = dist(cx, cz, x, minZ);
                     if (closeness < closest) {
                         closest = closeness;
@@ -128,7 +126,7 @@ public final class ServerCompassService {
                     }
                 }
 
-                if (cr.hasCompassTarget(x, maxZ)) {
+                if (CompassRegion.get(world, x, maxZ).hasCompassTarget(x, maxZ)) {
                     final int closeness = dist(cx, cz, x, maxZ);
                     if (closeness < closest) {
                         closest = closeness;
@@ -165,9 +163,8 @@ public final class ServerCompassService {
         int sectionIndex = pos.getY() >> 4;
         var section = chunk.getBlockStorageArray()[sectionIndex];
         if (!updateArea(compassRegion, section, chunkPos, sectionIndex)) {
-            // Invalidate the relevant caches
+            // Invalidate server-side cache (clients will have to wait for a refresh)
             CLOSEST_METEORITE_CACHE.invalidate(new Query(world, chunkPos));
-            CompassManager.INSTANCE.invalidate(chunkPos);
         }
     }
 
