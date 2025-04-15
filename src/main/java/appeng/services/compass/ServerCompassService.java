@@ -60,7 +60,7 @@ public final class ServerCompassService {
         var sourcePos = getMiddleBlockPosition(originChunkPos);
         var closestDistanceSq = Double.MAX_VALUE;
         var chosenPos = getMiddleBlockPosition(chunkPos);
-        for (var tileEntity : chunk.tileEntities.values()) {
+        for (var tileEntity : chunk.getTileEntityMap().values()) {
             if (tileEntity instanceof TileSkyChest) {
                 var tePos = tileEntity.getPos();
                 var distSq = sourcePos.distanceSq(tePos.getX(), 0, tePos.getZ());

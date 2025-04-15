@@ -43,8 +43,8 @@ public class CompassRegion extends WorldSavedData {
         Objects.requireNonNull(world, "world");
         Objects.requireNonNull(chunkPos, "chunkPos");
 
-        int regionX = chunkPos.x / CHUNKS_PER_REGION;
-        int regionZ = chunkPos.z / CHUNKS_PER_REGION;
+        int regionX = (chunkPos.x >> 10) << 10;
+        int regionZ = (chunkPos.z >> 10) << 10;
         var name = getRegionSaveName(regionX, regionZ);
 
         MapStorage worldStorage = world.getPerWorldStorage();

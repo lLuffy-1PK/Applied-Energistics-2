@@ -60,7 +60,7 @@ public class PacketCompassRequest extends AppEngPacket {
         NetworkHandler.instance.sendTo(new PacketCompassResponse(
                         pos,
                         result.isPresent(),
-                        result.orElse(new BlockPos(0, 0, 0))),
+                        result.orElse(BlockPos.ORIGIN)),
                 (EntityPlayerMP) player);
     }
 }

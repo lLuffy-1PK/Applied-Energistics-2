@@ -81,7 +81,7 @@ public final class OldCompassRegion {
                 .signExtend()
                 .regionToWorld(regionX)
                 .get();
-        int cz = ChunkCoord.of(packed >>> 10)
+        int cz = ChunkCoord.of(packed >> 10)
                 .unmask()
                 .signExtend()
                 .regionToWorld(regionZ)

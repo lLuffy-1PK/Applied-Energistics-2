@@ -52,6 +52,9 @@ import java.util.List;
  */
 public class SkyCompassBakedModel implements IBakedModel {
 
+    // The square distance to be within range of a meteor
+    private static final int MIN_DIST_SQ = 2;
+
     private final IBakedModel base;
 
     private final IBakedModel pointer;
@@ -177,7 +180,7 @@ public class SkyCompassBakedModel implements IBakedModel {
                 var dx = pos.getX() - closestMeteorite.getX();
                 var dz = pos.getZ() - closestMeteorite.getZ();
                 var distanceSq = dx * dx + dz * dz;
-                if (distanceSq > 2) {
+                if (distanceSq > MIN_DIST_SQ) {
                     var x = closestMeteorite.getX();
                     var z = closestMeteorite.getZ();
                     return (float) rad(pos.getX(), pos.getZ(), x, z);
