@@ -93,7 +93,8 @@ chat.appliedenergistics2.isNowUnlocked=Monitor is now Unlocked.
 chat.appliedenergistics2.InterfaceInOtherDimParam=Interface located at dimension: %d [ %s ] and cannot be highlighted
 chat.appliedenergistics2.InterfaceInOtherDim=Interface is located in another dimension and cannot be highlighted
 chat.appliedenergistics2.InterfaceHighlighted=The interface is now highlighted at X: %s Y: %s Z: %s
-chat.appliedenergistics2.CompassTestSection=Section [y=%d-%d] %d: %s
+chat.appliedenergistics2.CompassTestSuccess=Found in data file? %s, and found target at (%d,%d,%d).
+chat.appliedenergistics2.CompassTestFailure=Found in data file? %s, and found no target.
 
 // Creative Tabs
 itemGroup.appliedenergistics2=Applied Energistics 2

@@ -55,7 +55,7 @@ public final class ServerCompassService {
             return getMiddleBlockPosition(chunkPos);
         }
 
-        // Find the closest BE in the chunk. Usually it will only be one.
+        // Find the closest TE in the chunk. Usually it will only be one.
         var sourcePos = getMiddleBlockPosition(originChunkPos);
         var closestDistanceSq = Double.MAX_VALUE;
         var chosenPos = getMiddleBlockPosition(chunkPos);
@@ -158,45 +158,48 @@ public final class ServerCompassService {
     public static void notifyBlockChange(WorldServer world, BlockPos pos) {
         var chunk = world.getChunk(pos);
         var chunkPos = chunk.getPos();
-        var compassRegion = CompassRegion.get(world, chunkPos);
 
-        int sectionIndex = pos.getY() >> 4;
-        var section = chunk.getBlockStorageArray()[sectionIndex];
-        if (!updateArea(compassRegion, section, chunkPos, sectionIndex)) {
+        if (!updateArea(world, chunkPos)) {
             // Invalidate server-side cache (clients will have to wait for a refresh)
             CLOSEST_METEORITE_CACHE.invalidate(new Query(world, chunkPos));
         }
     }
 
     /**
-     * Scans a full chunk for the compass target.
+     * Scans a full chunk for the compass target, updating the corresponding CompassRegion.
+     *
+     * @return true if the compass target is in this chunk, false otherwise
      */
-    public static void updateArea(WorldServer world, ChunkPos chunkPos) {
+    public static boolean updateArea(WorldServer world, ChunkPos chunkPos) {
         var compassRegion = CompassRegion.get(world, chunkPos);
         var chunk = world.getChunk(chunkPos.x, chunkPos.z);
         ExtendedBlockStorage[] sections = chunk.getBlockStorageArray();
 
-        for (var i = 0; i < sections.length; i++) {
-            updateArea(compassRegion, sections[i], chunkPos, i);
+        var foundTarget = false;
+        for (ExtendedBlockStorage section : sections) {
+            if (scanArea(section)) {
+                foundTarget = true;
+            }
         }
+        compassRegion.setHasCompassTarget(chunkPos.x, chunkPos.z, foundTarget);
+        return foundTarget;
     }
 
     /**
-     * Scans a chunk's Section for the compass target, updating the corresponding CompassRegion.
+     * Scans a chunk's Section for the compass target. Does NOT update any CompassRegion.
+     * <p>
+     * Used in {@link ServerCompassService#updateArea(WorldServer, ChunkPos)} instead of
+     * {@link Chunk#getBlockState(int, int, int)} to check non-null, empty sections.
      *
      * @return true if the compass target is in this section, false otherwise
      */
-    private static boolean updateArea(CompassRegion compassRegion, @Nullable ExtendedBlockStorage section, ChunkPos chunkPos, int sectionIndex) {
-        int cx = chunkPos.x;
-        int cz = chunkPos.z;
-
+    private static boolean scanArea(@Nullable ExtendedBlockStorage section) {
+        // Also check for empty sections
         if (section == Chunk.NULL_BLOCK_STORAGE || section.isEmpty()) {
-            compassRegion.setHasCompassTarget(cx, cz, sectionIndex, false);
             return false;
         }
 
         boolean foundTarget = false;
-        // Scan the section for the compass target
         Optional<Block> maybeBlock = AEApi.instance().definitions().blocks().skyStoneChest().maybeBlock();
         if (maybeBlock.isPresent()) {
             Block skyStoneChest = maybeBlock.get();
@@ -214,7 +217,6 @@ public final class ServerCompassService {
                     }
                 }
             }
-            compassRegion.setHasCompassTarget(cx, cz, sectionIndex, foundTarget);
         }
         return foundTarget;
     }

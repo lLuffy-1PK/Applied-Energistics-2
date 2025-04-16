@@ -1,8 +1,6 @@
 package appeng.services.compass;
 
 import appeng.core.AELog;
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.WorldServer;
@@ -18,12 +16,13 @@ public class CompassRegion extends WorldSavedData {
      * The number of chunks that get saved in a region on each axis.
      */
     private static final int CHUNKS_PER_REGION = 1024;
+    // The number of bits needed to represent the chunk pos as an index in the bitmap.
+    private static final int BITS_PER_POS = Integer.numberOfTrailingZeros(CHUNKS_PER_REGION);
 
     private static final int BITMAP_LENGTH = CHUNKS_PER_REGION * CHUNKS_PER_REGION;
-    private static final String NBT_PREFIX = "section";
+    private static final String NBT_KEY = "data";
 
-    // Key is the section index
-    private final Int2ObjectMap<BitSet> sections = new Int2ObjectOpenHashMap<>();
+    private BitSet data = new BitSet(BITMAP_LENGTH);
 
     public CompassRegion(String name) {
         super(name);
@@ -49,8 +48,8 @@ public class CompassRegion extends WorldSavedData {
     public static CompassRegion get(WorldServer world, int chunkX, int chunkZ) {
         Objects.requireNonNull(world, "world");
 
-        int regionX = (chunkX >> 10) << 10;
-        int regionZ = (chunkZ >> 10) << 10;
+        int regionX = (chunkX >> BITS_PER_POS) << BITS_PER_POS;
+        int regionZ = (chunkZ >> BITS_PER_POS) << BITS_PER_POS;
 
         return getByRegion(world, regionX, regionZ);
     }
@@ -70,13 +69,8 @@ public class CompassRegion extends WorldSavedData {
     @Override
     public void readFromNBT(@NotNull NBTTagCompound nbt) {
         for (String key : nbt.getKeySet()) {
-            if (key.startsWith(NBT_PREFIX)) {
-                try {
-                    var sectionIndex = Integer.parseInt(key.substring(NBT_PREFIX.length()));
-                    sections.put(sectionIndex, BitSet.valueOf(nbt.getByteArray(key)));
-                } catch (NumberFormatException e) {
-                    AELog.warn("Compass region contains invalid NBT tag %s", key);
-                }
+            if (key.equals(NBT_KEY)) {
+                data = BitSet.valueOf(nbt.getByteArray(key));
             } else {
                 AELog.warn("Compass region contains unknown NBT tag %s", key);
             }
@@ -86,65 +80,27 @@ public class CompassRegion extends WorldSavedData {
     @Override
     @NotNull
     public NBTTagCompound writeToNBT(@NotNull NBTTagCompound compound) {
-        for (var entry : sections.int2ObjectEntrySet()) {
-            String key = NBT_PREFIX + entry.getIntKey();
-            if (entry.getValue().isEmpty()) {
-                continue;
-            }
-            compound.setByteArray(key, entry.getValue().toByteArray());
-        }
+        compound.setByteArray(NBT_KEY, data.toByteArray());
         return compound;
     }
 
     boolean hasCompassTarget(int cx, int cz) {
         var bitmapIndex = getBitmapIndex(cx, cz);
-        for (BitSet bitmap : sections.values()) {
-            if (bitmap.get(bitmapIndex)) {
-                return true;
-            }
-        }
-        return false;
+        return data.get(bitmapIndex);
     }
 
-    boolean hasCompassTarget(int cx, int cz, int sectionIndex) {
+    void setHasCompassTarget(int cx, int cz, boolean hasTarget) {
         var bitmapIndex = getBitmapIndex(cx, cz);
-        var section = sections.get(sectionIndex);
-        if (section != null) {
-            return section.get(bitmapIndex);
-        }
-        return false;
-    }
-
-    void setHasCompassTarget(int cx, int cz, int sectionIndex, boolean hasTarget) {
-        var bitmapIndex = getBitmapIndex(cx, cz);
-        var section = sections.get(sectionIndex);
-        if (section == null) {
-            if (hasTarget) {
-                section = new BitSet(BITMAP_LENGTH);
-                section.set(bitmapIndex);
-                sections.put(sectionIndex, section);
-                markDirty();
-            }
-        } else {
-            if (section.get(bitmapIndex) != hasTarget) {
-                markDirty();
-            }
-            // There already was data on this y-section in this region
-            if (!hasTarget) {
-                section.clear(bitmapIndex);
-                if (section.isEmpty()) {
-                    sections.remove(sectionIndex);
-                }
-                markDirty();
-            } else {
-                section.set(bitmapIndex);
-            }
+        var found = data.get(bitmapIndex);
+        if (found != hasTarget) {
+            data.set(bitmapIndex, hasTarget);
+            markDirty();
         }
     }
 
     private static int getBitmapIndex(int cx, int cz) {
         cx &= CHUNKS_PER_REGION - 1;
         cz &= CHUNKS_PER_REGION - 1;
-        return cx + cz * CHUNKS_PER_REGION;
+        return cx | (cz << BITS_PER_POS);
     }
 }
