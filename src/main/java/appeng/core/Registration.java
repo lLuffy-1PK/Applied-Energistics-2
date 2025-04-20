@@ -69,8 +69,10 @@ import appeng.recipes.ores.OreDictionaryHandler;
 import appeng.spatial.BiomeGenStorage;
 import appeng.spatial.StorageWorldProvider;
 import appeng.tile.AEBaseTile;
+import appeng.worldgen.MeteoriteStructurePiece;
 import appeng.worldgen.MeteoriteWorldGen;
 import appeng.worldgen.QuartzWorldGen;
+import appeng.worldgen.meteorite.heightmap.HeightMapAccessors;
 import com.google.common.base.Preconditions;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.advancements.ICriterionInstance;
@@ -468,7 +470,11 @@ final class Registration {
         }
 
         if (AEConfig.instance().isFeatureEnabled(AEFeature.METEORITE_WORLD_GEN)) {
-            GameRegistry.registerWorldGenerator(new MeteoriteWorldGen(), 0);
+            var meteoriteGen = new MeteoriteWorldGen();
+            meteoriteGen.registerStructure();
+            MinecraftForge.EVENT_BUS.register(meteoriteGen);
+            MinecraftForge.TERRAIN_GEN_BUS.register(HeightMapAccessors.class);
+            MinecraftForge.EVENT_BUS.register(HeightMapAccessors.class);
         }
 
         final IMovableRegistry mr = registries.movable();

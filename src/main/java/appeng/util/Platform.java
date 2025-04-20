@@ -180,13 +180,14 @@ public class Platform {
      * @param worldSeed Global seed independent of the grid position
      * @param x X location in the grid
      * @param z Z location in the grid
+     * @param offset An offset to apply to the final seed
      */
-    public static void seedFromGrid(final Random rng, final long worldSeed, final long x, final long z) {
+    public static void seedFromGrid(final Random rng, final long worldSeed, final long x, final long z, final int offset) {
         rng.setSeed(worldSeed);
         final long xSeed = rng.nextLong() >> 2 + 1L;
         final long zSeed = rng.nextLong() >> 2 + 1L;
         final long gridSeed = (xSeed * x + zSeed * z) ^ worldSeed;
-        rng.setSeed(gridSeed);
+        rng.setSeed(gridSeed + offset);
     }
 
     /**

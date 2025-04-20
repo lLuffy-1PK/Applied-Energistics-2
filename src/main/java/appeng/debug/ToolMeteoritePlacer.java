@@ -21,30 +21,30 @@ package appeng.debug;
 
 import appeng.items.AEBaseItem;
 import appeng.util.Platform;
-import appeng.worldgen.MeteoritePlacer;
-import appeng.worldgen.meteorite.StandardWorld;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.TextComponentString;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.NotNull;
 
 
 public class ToolMeteoritePlacer extends AEBaseItem {
     @Override
-    public EnumActionResult onItemUseFirst(final EntityPlayer player, final World world, final BlockPos pos, final EnumFacing side, final float hitX, final float hitY, final float hitZ, final EnumHand hand) {
+    @NotNull
+    public EnumActionResult onItemUseFirst(final @NotNull EntityPlayer player, final @NotNull World world, final @NotNull BlockPos pos, final @NotNull EnumFacing side, final float hitX, final float hitY, final float hitZ, final @NotNull EnumHand hand) {
         if (Platform.isClient()) {
             return EnumActionResult.PASS;
         }
 
-        final MeteoritePlacer mp = new MeteoritePlacer(new StandardWorld(world), System.currentTimeMillis(), pos.getX(), pos.getY(), pos.getZ());
-        final boolean worked = mp.spawnMeteoriteCenter();
-
-        if (!worked) {
-            player.sendMessage(new TextComponentString("Un-suitable Location."));
-        }
+        // TODO: reimplement
+//        final MeteoritePlacer mp = new MeteoritePlacer(new StandardWorld(world), System.currentTimeMillis(), pos.getX(), pos.getY(), pos.getZ());
+//        final boolean worked = mp.spawnMeteoriteCenter();
+//
+//        if (!worked) {
+//            player.sendMessage(new TextComponentString("Un-suitable Location."));
+//        }
 
         return EnumActionResult.SUCCESS;
     }

@@ -22,25 +22,28 @@ package appeng.worldgen.meteorite;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
+import net.minecraftforge.common.util.Constants.BlockFlags;
 
 
 public class MeteoriteBlockPutter {
-    public boolean put(final IMeteoriteWorld w, final int i, final int j, final int k, final Block blk) {
-        final Block original = w.getBlock(i, j, k);
+    public boolean put(final World w, final BlockPos pos, final Block blk) {
+        Block original = w.getBlockState(pos).getBlock();
 
         if (original == Blocks.BEDROCK || original == blk) {
             return false;
         }
 
-        w.setBlock(i, j, k, blk);
+        w.setBlockState(pos, blk.getDefaultState(), BlockFlags.SEND_TO_CLIENTS | BlockFlags.NO_OBSERVERS);
         return true;
     }
 
-    public void put(final IMeteoriteWorld w, final int i, final int j, final int k, final IBlockState state) {
-        if (w.getBlock(i, j, k) == Blocks.BEDROCK) {
+    public void put(final World w, final BlockPos pos, final IBlockState state) {
+        if (w.getBlockState(pos) == Blocks.BEDROCK) {
             return;
         }
 
-        w.setBlock(i, j, k, state, 3);
+        w.setBlockState(pos, state, BlockFlags.SEND_TO_CLIENTS | BlockFlags.NO_OBSERVERS);
     }
 }

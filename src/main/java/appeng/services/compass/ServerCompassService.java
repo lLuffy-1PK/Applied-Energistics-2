@@ -179,6 +179,7 @@ public final class ServerCompassService {
         for (ExtendedBlockStorage section : sections) {
             if (scanArea(section)) {
                 foundTarget = true;
+                break;
             }
         }
         compassRegion.setHasCompassTarget(chunkPos.x, chunkPos.z, foundTarget);
