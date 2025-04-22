@@ -1,10 +1,9 @@
-package appeng.worldgen;
+package appeng.worldgen.meteorite;
 
 import appeng.core.AEConfig;
 import appeng.util.Platform;
-import appeng.worldgen.meteorite.Constants;
-import appeng.worldgen.meteorite.CraterLakeState;
-import appeng.worldgen.meteorite.CraterType;
+import appeng.worldgen.meteorite.settings.CraterLakeState;
+import appeng.worldgen.meteorite.settings.CraterType;
 import appeng.worldgen.meteorite.fallout.FalloutMode;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.BlockPos;

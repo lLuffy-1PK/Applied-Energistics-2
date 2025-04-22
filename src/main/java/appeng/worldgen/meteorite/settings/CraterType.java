@@ -1,4 +1,4 @@
-package appeng.worldgen.meteorite;
+package appeng.worldgen.meteorite.settings;
 
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;

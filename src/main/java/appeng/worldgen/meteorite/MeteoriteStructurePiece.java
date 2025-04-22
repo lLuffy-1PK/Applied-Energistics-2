@@ -1,10 +1,11 @@
-package appeng.worldgen;
+package appeng.worldgen.meteorite;
 
 import appeng.services.compass.ServerCompassService;
 import appeng.util.StructureBoundingBoxUtils;
-import appeng.worldgen.meteorite.CraterLakeState;
-import appeng.worldgen.meteorite.CraterType;
-import appeng.worldgen.meteorite.PlacedMeteoriteSettings;
+import appeng.worldgen.meteorite.MeteoritePlacer;
+import appeng.worldgen.meteorite.settings.CraterLakeState;
+import appeng.worldgen.meteorite.settings.CraterType;
+import appeng.worldgen.meteorite.settings.PlacedMeteoriteSettings;
 import appeng.worldgen.meteorite.fallout.FalloutMode;
 import appeng.worldgen.meteorite.heightmap.HeightMapAccessors;
 import appeng.worldgen.meteorite.heightmap.IHeightAccessor;

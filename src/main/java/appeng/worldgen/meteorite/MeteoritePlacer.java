@@ -16,7 +16,7 @@
  * along with Applied Energistics 2.  If not, see <http://www.gnu.org/licenses/lgpl>.
  */
 
-package appeng.worldgen;
+package appeng.worldgen.meteorite;
 
 
 import appeng.api.AEApi;
@@ -28,11 +28,9 @@ import appeng.core.features.AEFeature;
 import appeng.util.InventoryAdaptor;
 import appeng.util.Platform;
 import appeng.util.StructureBoundingBoxUtils.BoundingBoxClamper;
-import appeng.worldgen.meteorite.Constants;
-import appeng.worldgen.meteorite.CraterType;
-import appeng.worldgen.meteorite.MeteoriteBlockPutter;
-import appeng.worldgen.meteorite.PlacedMeteoriteSettings;
 import appeng.worldgen.meteorite.fallout.*;
+import appeng.worldgen.meteorite.settings.CraterType;
+import appeng.worldgen.meteorite.settings.PlacedMeteoriteSettings;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.item.EntityItem;

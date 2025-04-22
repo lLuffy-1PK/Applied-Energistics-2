@@ -69,7 +69,6 @@ import appeng.recipes.ores.OreDictionaryHandler;
 import appeng.spatial.BiomeGenStorage;
 import appeng.spatial.StorageWorldProvider;
 import appeng.tile.AEBaseTile;
-import appeng.worldgen.MeteoriteStructurePiece;
 import appeng.worldgen.MeteoriteWorldGen;
 import appeng.worldgen.QuartzWorldGen;
 import appeng.worldgen.meteorite.heightmap.HeightMapAccessors;

@@ -21,6 +21,8 @@ package appeng.worldgen;
 
 import appeng.api.features.IWorldGen.WorldGenType;
 import appeng.core.features.registries.WorldGenRegistry;
+import appeng.worldgen.meteorite.MapGenMeteorite;
+import appeng.worldgen.meteorite.MeteoriteStructurePiece;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.util.math.ChunkPos;

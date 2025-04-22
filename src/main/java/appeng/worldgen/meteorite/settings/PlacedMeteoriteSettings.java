@@ -1,4 +1,4 @@
-package appeng.worldgen.meteorite;
+package appeng.worldgen.meteorite.settings;
 
 import appeng.worldgen.meteorite.fallout.FalloutMode;
 import net.minecraft.nbt.NBTTagCompound;
