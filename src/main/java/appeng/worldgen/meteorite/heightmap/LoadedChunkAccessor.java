@@ -32,7 +32,7 @@ public class LoadedChunkAccessor extends BaseChunkAccessor {
             pos.setPos(x, pos.getY(), pos.getZ());
 
             for (int z = 0; z < CHUNK_SIZE; z++) {
-                pos.setPos(x, pos.getY(), pos.getZ());
+                pos.setPos(pos.getX(), pos.getY(), z);
                 var index = (z << 4) | x;
 
                 int h = heightMap[index];

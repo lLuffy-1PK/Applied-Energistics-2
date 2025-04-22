@@ -19,7 +19,6 @@ import java.util.Random;
 
 public class MapGenMeteorite extends MapGenStructure {
     public static final String ID = "ae2_meteorite";
-    private static final int MIN_METEOR_RADIUS = 2;
 
     @Override
     @NotNull
@@ -77,8 +76,8 @@ public class MapGenMeteorite extends MapGenStructure {
         public Start(World worldIn, long seed, int chunkX, int chunkZ) {
             super(chunkX, chunkZ);
             var rng = new Random(seed);
-            final float meteoriteRadius = rng.nextFloat() * (Constants.MAX_METEOR_RADIUS - MIN_METEOR_RADIUS)
-                    + MIN_METEOR_RADIUS;
+            final float meteoriteRadius = rng.nextFloat() * (Constants.MAX_METEOR_RADIUS - Constants.MIN_METEOR_RADIUS)
+                    + Constants.MIN_METEOR_RADIUS;
             final int centerX = (chunkX << 4) + rng.nextInt(16);
             final int centerZ = (chunkZ << 4) + rng.nextInt(16);
             // 1.12 doesn't have access to heightmaps during generation, set the elevation later.

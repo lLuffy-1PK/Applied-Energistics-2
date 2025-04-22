@@ -29,9 +29,10 @@ import net.minecraftforge.common.util.Constants.BlockFlags;
 
 public class MeteoriteBlockPutter {
     public boolean put(final World w, final BlockPos pos, final Block blk) {
-        Block original = w.getBlockState(pos).getBlock();
+        var originalState = w.getBlockState(pos);
+        Block original = originalState.getBlock();
 
-        if (original == Blocks.BEDROCK || original == blk) {
+        if (isUnbreakable(w, pos, originalState) || original == blk) {
             return false;
         }
 
@@ -40,10 +41,14 @@ public class MeteoriteBlockPutter {
     }
 
     public void put(final World w, final BlockPos pos, final IBlockState state) {
-        if (w.getBlockState(pos) == Blocks.BEDROCK) {
+        if (isUnbreakable(w, pos, w.getBlockState(pos))) {
             return;
         }
 
         w.setBlockState(pos, state, BlockFlags.SEND_TO_CLIENTS | BlockFlags.NO_OBSERVERS);
+    }
+
+    private boolean isUnbreakable(final World w, final BlockPos pos, final IBlockState state) {
+        return state.getBlock() == Blocks.BEDROCK || state.getBlockHardness(w, pos) < 0.0F;
     }
 }
