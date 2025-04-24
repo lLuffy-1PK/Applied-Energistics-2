@@ -1,14 +1,12 @@
 package appeng.worldgen.meteorite;
 
-import appeng.services.compass.ServerCompassService;
 import appeng.util.StructureBoundingBoxUtils;
-import appeng.worldgen.meteorite.MeteoritePlacer;
-import appeng.worldgen.meteorite.settings.CraterLakeState;
-import appeng.worldgen.meteorite.settings.CraterType;
-import appeng.worldgen.meteorite.settings.PlacedMeteoriteSettings;
 import appeng.worldgen.meteorite.fallout.FalloutMode;
 import appeng.worldgen.meteorite.heightmap.HeightMapAccessors;
 import appeng.worldgen.meteorite.heightmap.IHeightAccessor;
+import appeng.worldgen.meteorite.settings.CraterLakeState;
+import appeng.worldgen.meteorite.settings.CraterType;
+import appeng.worldgen.meteorite.settings.PlacedMeteoriteSettings;
 import com.google.common.math.Quantiles;
 import com.google.common.math.StatsAccumulator;
 import net.minecraft.nbt.NBTTagCompound;
@@ -16,7 +14,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockPos.MutableBlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldServer;
 import net.minecraft.world.gen.structure.StructureBoundingBox;
 import net.minecraft.world.gen.structure.StructureComponent;
 import net.minecraft.world.gen.structure.template.TemplateManager;
@@ -88,9 +85,6 @@ public class MeteoriteStructurePiece extends StructureComponent {
             finalizeProperties(world, intersectedBB);
         }
         MeteoritePlacer.place(world, this.settings, random, intersectedBB);
-        for (var chunkPos : StructureBoundingBoxUtils.getChunksWithin(intersectedBB)) {
-            ServerCompassService.updateArea((WorldServer) world, chunkPos);
-        }
         return true;
     }
 

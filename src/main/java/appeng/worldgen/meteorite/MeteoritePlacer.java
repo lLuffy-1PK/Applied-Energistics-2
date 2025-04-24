@@ -26,6 +26,7 @@ import appeng.core.AEConfig;
 import appeng.core.AppEng;
 import appeng.core.features.AEFeature;
 import appeng.loot.TallyingLootContext;
+import appeng.services.compass.ServerCompassService;
 import appeng.util.InventoryAdaptor;
 import appeng.util.Platform;
 import appeng.util.StructureBoundingBoxUtils.BoundingBoxClamper;
@@ -43,6 +44,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockPos.MutableBlockPos;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.Chunk;
@@ -179,6 +181,7 @@ public final class MeteoritePlacer {
         var chestPos = new BlockPos(x, y, z);
         if (boundingBox.isVecInside(chestPos)) {
             placeChest(chestPos);
+            ServerCompassService.updateArea((WorldServer) world, new ChunkPos(chestPos));
         }
     }
 
