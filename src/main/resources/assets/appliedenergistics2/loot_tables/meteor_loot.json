@@ -1,0 +1,157 @@
+{
+    "pools": [
+        {
+            "name": "presses",
+            "rolls": {
+                "min": 1,
+                "max": 4
+            },
+            "entries": [
+                {
+                    "type": "item",
+                    "name": "0",
+                    "conditions": [
+                        {
+                            "condition": "appliedenergistics2:loot_can_roll",
+                            "id": "material.press.processor.calculation",
+                            "max": 1
+                        }
+                    ],
+                    "functions": [
+                        {
+                            "function": "appliedenergistics2:transform_to_maybe_item",
+                            "id": "material.press.processor.calculation"
+                        },
+                        {
+                            "function": "appliedenergistics2:tally_loot",
+                            "id": "material.press.processor.calculation"
+                        }
+                    ]
+                },
+                {
+                    "type": "item",
+                    "name": "1",
+                    "conditions": [
+                        {
+                            "condition": "appliedenergistics2:loot_can_roll",
+                            "id": "material.press.processor.engineering",
+                            "max": 1
+                        }
+                    ],
+                    "functions": [
+                        {
+                            "function": "appliedenergistics2:transform_to_maybe_item",
+                            "id": "material.press.processor.engineering"
+                        },
+                        {
+                            "function": "appliedenergistics2:tally_loot",
+                            "id": "material.press.processor.engineering"
+                        }
+                    ]
+                },
+                {
+                    "type": "item",
+                    "name": "2",
+                    "conditions": [
+                        {
+                            "condition": "appliedenergistics2:loot_can_roll",
+                            "id": "material.press.processor.logic",
+                            "max": 1
+                        }
+                    ],
+                    "functions": [
+                        {
+                            "function": "appliedenergistics2:transform_to_maybe_item",
+                            "id": "material.press.processor.logic"
+                        },
+                        {
+                            "function": "appliedenergistics2:tally_loot",
+                            "id": "material.press.processor.logic"
+                        }
+                    ]
+                },
+                {
+                    "type": "item",
+                    "name": "3",
+                    "conditions": [
+                        {
+                            "condition": "appliedenergistics2:loot_can_roll",
+                            "id": "material.press.silicon",
+                            "max": 1
+                        }
+                    ],
+                    "functions": [
+                        {
+                            "function": "appliedenergistics2:transform_to_maybe_item",
+                            "id": "material.press.silicon"
+                        },
+                        {
+                            "function": "appliedenergistics2:tally_loot",
+                            "id": "material.press.silicon"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "nuggets",
+            "rolls": {
+                "min": 1,
+                "max": 3
+            },
+            "conditions": [
+                {
+                    "condition": "random_chance",
+                    "chance": 0.6666
+                }
+            ],
+            "entries": [
+                {
+                    "type": "item",
+                    "name": "0",
+                    "functions": [
+                        {
+                            "function": "appliedenergistics2:transform_to_random_ore",
+                            "ores": [
+                                "nuggetIron",
+                                "nuggetGold",
+                                "nuggetCopper",
+                                "nuggetTin",
+                                "nuggetSilver",
+                                "nuggetLead",
+                                "nuggetPlatinum",
+                                "nuggetNickel",
+                                "nuggetAluminium",
+                                "nuggetElectrum"
+                            ]
+                        },
+                        {
+                            "function": "set_count",
+                            "count": {
+                                "min": 1,
+                                "max": 12
+                            }
+                        }
+                    ]
+                },
+                {
+                    "type": "item",
+                    "name": "1",
+                    "functions": [
+                        {
+                            "function": "appliedenergistics2:transform_to_maybe_item",
+                            "id": "sky_stone_block"
+                        },
+                        {
+                            "function": "set_count",
+                            "count": {
+                                "min": 1,
+                                "max": 12
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -21,10 +21,11 @@ package appeng.worldgen.meteorite;
 
 import appeng.api.AEApi;
 import appeng.api.definitions.IBlockDefinition;
-import appeng.api.definitions.IMaterials;
 import appeng.block.storage.BlockSkyChest;
 import appeng.core.AEConfig;
+import appeng.core.AppEng;
 import appeng.core.features.AEFeature;
+import appeng.loot.TallyingLootContext;
 import appeng.util.InventoryAdaptor;
 import appeng.util.Platform;
 import appeng.util.StructureBoundingBoxUtils.BoundingBoxClamper;
@@ -38,15 +39,17 @@ import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockPos.MutableBlockPos;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.gen.structure.StructureBoundingBox;
-import net.minecraftforge.oredict.OreDictionary;
+import net.minecraft.world.storage.loot.LootContext;
+import net.minecraft.world.storage.loot.LootTable;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -56,7 +59,6 @@ public final class MeteoritePlacer {
     private static final double METEOR_LOWER_CURVATURE = 0.8D;
     private static final double CRATER_CURVATURE = 0.02D;
     private static final int CRATER_RADIUS = 5;
-    private static final int SKYSTONE_SPAWN_LIMIT = 12;
 
     private final IBlockDefinition skyStoneDefinition;
     private final MeteoriteBlockPutter putter = new MeteoriteBlockPutter();
@@ -191,56 +193,12 @@ public final class MeteoritePlacer {
         final TileEntity te = world.getTileEntity(pos);
         final InventoryAdaptor ap = InventoryAdaptor.getAdaptor(te, EnumFacing.UP);
         if (ap != null) {
-            final ArrayList<ItemStack> pressTypes = new ArrayList<>(4);
-            final IMaterials materials = AEApi.instance().definitions().materials();
-            materials.calcProcessorPress().maybeStack(1).ifPresent(pressTypes::add);
-            materials.engProcessorPress().maybeStack(1).ifPresent(pressTypes::add);
-            materials.logicProcessorPress().maybeStack(1).ifPresent(pressTypes::add);
-            materials.siliconPress().maybeStack(1).ifPresent(pressTypes::add);
-
-            final int pressCount = 1 + random.nextInt(3);
-            final int removeCount = Math.max(0, pressTypes.size() - pressCount);
-
-            // Make pressTypes contain pressCount random presses
-            for (int zz = 0; zz < removeCount; zz++) {
-                pressTypes.remove(random.nextInt(pressTypes.size()));
-            }
-
-            for (ItemStack toAdd : pressTypes) {
-                ap.addItems(toAdd);
-            }
-
-            final List<ItemStack> nuggetLoot = new ArrayList<>();
-            nuggetLoot.addAll(OreDictionary.getOres("nuggetIron"));
-            nuggetLoot.addAll(OreDictionary.getOres("nuggetCopper"));
-            nuggetLoot.addAll(OreDictionary.getOres("nuggetTin"));
-            nuggetLoot.addAll(OreDictionary.getOres("nuggetSilver"));
-            nuggetLoot.addAll(OreDictionary.getOres("nuggetLead"));
-            nuggetLoot.addAll(OreDictionary.getOres("nuggetPlatinum"));
-            nuggetLoot.addAll(OreDictionary.getOres("nuggetNickel"));
-            nuggetLoot.addAll(OreDictionary.getOres("nuggetAluminium"));
-            nuggetLoot.addAll(OreDictionary.getOres("nuggetElectrum"));
-            nuggetLoot.add(new ItemStack(net.minecraft.init.Items.GOLD_NUGGET));
-            final int secondaryCount = 1 + random.nextInt(3);
-            for (int zz = 0; zz < secondaryCount; zz++) {
-                switch (random.nextInt(3)) {
-                    case 0:
-                        final int amount = 1 + random.nextInt(SKYSTONE_SPAWN_LIMIT);
-                        skyStoneDefinition.maybeStack(amount).ifPresent(ap::addItems);
-                        break;
-                    case 1:
-                        ItemStack nugget = nuggetLoot.get(random.nextInt(nuggetLoot.size()));
-                        if (nugget != null) {
-                            nugget = nugget.copy();
-                            nugget.setCount(1 + random.nextInt(12));
-                            ap.addItems(nugget);
-                        }
-                        break;
-                    case 2:
-                    default:
-                        // Add nothing
-                        break;
-                }
+            LootTable table = world.getLootTableManager().getLootTableFromLocation(
+                    new ResourceLocation(AppEng.MOD_ID, Constants.METEOR_LOOT_TABLE));
+            LootContext ctx = new TallyingLootContext.Builder((WorldServer) world).build();
+            List<ItemStack> stacks = table.generateLootForPools(world.rand, ctx);
+            for (var stack : stacks) {
+                ap.addItems(stack);
             }
         }
     }

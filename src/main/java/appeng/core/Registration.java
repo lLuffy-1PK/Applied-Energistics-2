@@ -59,7 +59,7 @@ import appeng.hooks.WrenchClickHook;
 import appeng.items.materials.ItemMaterial;
 import appeng.items.parts.ItemFacade;
 import appeng.items.parts.ItemPart;
-import appeng.loot.ChestLoot;
+import appeng.loot.*;
 import appeng.me.cache.*;
 import appeng.recipes.AEItemResolver;
 import appeng.recipes.AERecipeLoader;
@@ -71,6 +71,7 @@ import appeng.spatial.StorageWorldProvider;
 import appeng.tile.AEBaseTile;
 import appeng.worldgen.MeteoriteWorldGen;
 import appeng.worldgen.QuartzWorldGen;
+import appeng.worldgen.meteorite.Constants;
 import appeng.worldgen.meteorite.heightmap.HeightMapAccessors;
 import com.google.common.base.Preconditions;
 import net.minecraft.advancements.CriteriaTriggers;
@@ -86,6 +87,9 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.DimensionType;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
+import net.minecraft.world.storage.loot.LootTableList;
+import net.minecraft.world.storage.loot.conditions.LootConditionManager;
+import net.minecraft.world.storage.loot.functions.LootFunctionManager;
 import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.common.DimensionManager;
@@ -197,6 +201,14 @@ final class Registration {
 
         if (AEConfig.instance().isFeatureEnabled(AEFeature.CHEST_LOOT)) {
             MinecraftForge.EVENT_BUS.register(new ChestLoot());
+        }
+        // Meteor loot table
+        if (AEConfig.instance().isFeatureEnabled(AEFeature.SPAWN_PRESSES_IN_METEORITES)) {
+            LootTableList.register(new ResourceLocation(AppEng.MOD_ID, Constants.METEOR_LOOT_TABLE));
+            LootConditionManager.registerCondition(new LootCanRoll.Serializer());
+            LootFunctionManager.registerFunction(new TallyLoot.Serializer());
+            LootFunctionManager.registerFunction(new ToMaybeItem.Serializer());
+            LootFunctionManager.registerFunction(new ToRandomOre.Serializer());
         }
 
         final IGridCacheRegistry gcr = registries.gridCache();
