@@ -25,7 +25,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.common.DimensionManager;
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
 
 import javax.annotation.Nonnull;
@@ -89,8 +88,11 @@ public final class WorldData implements IWorldData {
         this.storageData = storageData;
         this.spawnData = spawnData;
 
-        this.startables = Lists.newArrayList(playerData, storageData);
-        this.stoppables = Lists.newArrayList(playerData, storageData);
+        // create save-specific converters
+        this.compassDataConverter = new CompassDataConverter(this.compassDirectory);
+
+        this.startables = Lists.newArrayList(playerData, storageData, compassDataConverter);
+        this.stoppables = Lists.newArrayList(playerData, storageData, compassDataConverter);
     }
 
     /**
@@ -142,11 +144,6 @@ public final class WorldData implements IWorldData {
         }
 
         this.startables.clear();
-
-        // create save-specific compass converter
-        final var compassDataConverter = new CompassDataConverter(this.compassDirectory);
-        this.compassDataConverter = compassDataConverter;
-        MinecraftForge.EVENT_BUS.register(compassDataConverter);
     }
 
     @Override
@@ -161,7 +158,6 @@ public final class WorldData implements IWorldData {
         Preconditions.checkNotNull(instance);
 
         this.stoppables.clear();
-        MinecraftForge.EVENT_BUS.unregister(instance.compassDataConverter());
         instance = null;
     }
 
