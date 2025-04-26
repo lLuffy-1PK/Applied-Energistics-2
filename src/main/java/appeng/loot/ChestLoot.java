@@ -21,6 +21,11 @@ package appeng.loot;
 
 import appeng.api.AEApi;
 import appeng.api.definitions.IMaterials;
+import appeng.core.AppEng;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.World;
+import net.minecraft.world.WorldServer;
 import net.minecraft.world.storage.loot.*;
 import net.minecraft.world.storage.loot.conditions.LootCondition;
 import net.minecraft.world.storage.loot.conditions.RandomChance;
@@ -28,6 +33,10 @@ import net.minecraft.world.storage.loot.functions.LootFunction;
 import net.minecraft.world.storage.loot.functions.SetMetadata;
 import net.minecraftforge.event.LootTableLoadEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+
+import java.util.List;
+
+import static appeng.worldgen.meteorite.MeteorConstants.METEOR_LOOT_TABLE;
 
 
 public class ChestLoot {
@@ -60,4 +69,10 @@ public class ChestLoot {
         }
     }
 
+    public static List<ItemStack> generateMeteorLoot(World world) {
+        LootTable table = world.getLootTableManager().getLootTableFromLocation(
+                new ResourceLocation(AppEng.MOD_ID, METEOR_LOOT_TABLE));
+        LootContext ctx = new TallyingLootContext.Builder((WorldServer) world).build();
+        return table.generateLootForPools(world.rand, ctx);
+    }
 }

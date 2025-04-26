@@ -25,6 +25,7 @@ import appeng.block.storage.BlockSkyChest;
 import appeng.core.AEConfig;
 import appeng.core.AppEng;
 import appeng.core.features.AEFeature;
+import appeng.loot.ChestLoot;
 import appeng.loot.TallyingLootContext;
 import appeng.services.compass.ServerCompassService;
 import appeng.util.InventoryAdaptor;
@@ -202,10 +203,7 @@ public final class MeteoritePlacer {
         final TileEntity te = world.getTileEntity(pos);
         final InventoryAdaptor ap = InventoryAdaptor.getAdaptor(te, EnumFacing.UP);
         if (ap != null) {
-            LootTable table = world.getLootTableManager().getLootTableFromLocation(
-                    new ResourceLocation(AppEng.MOD_ID, METEOR_LOOT_TABLE));
-            LootContext ctx = new TallyingLootContext.Builder((WorldServer) world).build();
-            List<ItemStack> stacks = table.generateLootForPools(world.rand, ctx);
+            var stacks = ChestLoot.generateMeteorLoot(world);
             for (var stack : stacks) {
                 ap.addItems(stack);
             }

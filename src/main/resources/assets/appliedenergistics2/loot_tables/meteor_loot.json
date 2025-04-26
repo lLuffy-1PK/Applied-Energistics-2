@@ -8,8 +8,9 @@
             },
             "entries": [
                 {
+                    "entryName": "Calculation Press",
                     "type": "item",
-                    "name": "0",
+                    "name": "minecraft:air",
                     "conditions": [
                         {
                             "condition": "appliedenergistics2:loot_can_roll",
@@ -29,8 +30,9 @@
                     ]
                 },
                 {
+                    "entryName": "Engineering Press",
                     "type": "item",
-                    "name": "1",
+                    "name": "minecraft:air",
                     "conditions": [
                         {
                             "condition": "appliedenergistics2:loot_can_roll",
@@ -50,8 +52,9 @@
                     ]
                 },
                 {
+                    "entryName": "Logic Press",
                     "type": "item",
-                    "name": "2",
+                    "name": "minecraft:air",
                     "conditions": [
                         {
                             "condition": "appliedenergistics2:loot_can_roll",
@@ -71,8 +74,9 @@
                     ]
                 },
                 {
+                    "entryName": "Silicon Press",
                     "type": "item",
-                    "name": "3",
+                    "name": "minecraft:air",
                     "conditions": [
                         {
                             "condition": "appliedenergistics2:loot_can_roll",
@@ -107,8 +111,9 @@
             ],
             "entries": [
                 {
+                    "entryName": "Nuggets",
                     "type": "item",
-                    "name": "0",
+                    "name": "minecraft:air",
                     "functions": [
                         {
                             "function": "appliedenergistics2:transform_to_random_ore",
@@ -135,8 +140,9 @@
                     ]
                 },
                 {
+                    "entryName": "Sky Stone",
                     "type": "item",
-                    "name": "1",
+                    "name": "minecraft:air",
                     "functions": [
                         {
                             "function": "appliedenergistics2:transform_to_maybe_item",
