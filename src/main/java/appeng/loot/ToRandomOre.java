@@ -1,7 +1,6 @@
 package appeng.loot;
 
 import appeng.core.AppEng;
-import com.google.common.collect.Lists;
 import com.google.gson.*;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.JsonUtils;
@@ -12,6 +11,7 @@ import net.minecraft.world.storage.loot.functions.LootFunction;
 import net.minecraftforge.oredict.OreDictionary;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -63,7 +63,7 @@ public class ToRandomOre extends LootFunction {
                                        @NotNull JsonDeserializationContext deserializationContext,
                                        LootCondition @NotNull [] conditionsIn) {
             JsonArray array = JsonUtils.getJsonArray(object, ORES);
-            Collection<String> oreDictNames = Lists.newArrayList();
+            ArrayList<String> oreDictNames = new ArrayList<>();
             for (JsonElement element : array) {
                 oreDictNames.add(element.getAsString());
             }

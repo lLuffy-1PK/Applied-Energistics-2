@@ -56,7 +56,6 @@ public final class WorldData implements IWorldData {
 
     private final IWorldPlayerData playerData;
     private final IWorldGridStorageData storageData;
-    private final IWorldSpawnData spawnData;
 
     private final List<IOnWorldStartable> startables;
     private final List<IOnWorldStoppable> stoppables;
@@ -64,9 +63,6 @@ public final class WorldData implements IWorldData {
     private final File ae2directory;
     private final File spawnDirectory;
     private final File compassDirectory;
-
-    private CompassDataConverter compassDataConverter;
-    private MeteoriteDataConverter meteoriteDataConverter;
 
     private final Configuration sharedConfig;
 
@@ -84,15 +80,12 @@ public final class WorldData implements IWorldData {
         final PlayerData playerData = new PlayerData(this.sharedConfig);
         final StorageData storageData = new StorageData(this.sharedConfig);
 
-        final IWorldSpawnData spawnData = new SpawnData(this.spawnDirectory);
-
         this.playerData = playerData;
         this.storageData = storageData;
-        this.spawnData = spawnData;
 
         // create save-specific converters
-        this.compassDataConverter = new CompassDataConverter(this.compassDirectory);
-        this.meteoriteDataConverter = new MeteoriteDataConverter(this.spawnDirectory);
+        var meteoriteDataConverter = new MeteoriteDataConverter(this.spawnDirectory);
+        var compassDataConverter = new CompassDataConverter(this.compassDirectory);
 
         this.startables = Lists.newArrayList(playerData, storageData, compassDataConverter, meteoriteDataConverter);
         this.stoppables = Lists.newArrayList(playerData, storageData, compassDataConverter, meteoriteDataConverter);
@@ -174,17 +167,5 @@ public final class WorldData implements IWorldData {
     @Override
     public IWorldPlayerData playerData() {
         return this.playerData;
-    }
-
-    @Nonnull
-    @Override
-    public IWorldSpawnData spawnData() {
-        return this.spawnData;
-    }
-
-    @Nonnull
-    @Override
-    public CompassDataConverter compassDataConverter() {
-        return this.compassDataConverter;
     }
 }

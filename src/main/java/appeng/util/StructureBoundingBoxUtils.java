@@ -1,11 +1,11 @@
 package appeng.util;
 
 import com.github.bsideup.jabel.Desugar;
-import com.google.common.collect.Lists;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.gen.structure.StructureBoundingBox;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 public class StructureBoundingBoxUtils {
@@ -77,7 +77,7 @@ public class StructureBoundingBoxUtils {
     }
 
     public static Collection<ChunkPos> getChunksWithin(StructureBoundingBox boundingBox) {
-        Collection<ChunkPos> chunkPositions = Lists.newArrayList();
+        ArrayList<ChunkPos> chunkPositions = new ArrayList<>();
         int minChunkX = boundingBox.minX >> 4;
         int maxChunkX = boundingBox.maxX >> 4;
         int minChunkZ = boundingBox.minZ >> 4;
