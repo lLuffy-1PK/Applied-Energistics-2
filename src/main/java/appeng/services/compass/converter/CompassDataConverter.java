@@ -1,9 +1,10 @@
 package appeng.services.compass.converter;
 
 import appeng.core.AELog;
-import appeng.core.worlddata.CompassMetadata;
 import appeng.core.worlddata.IOnWorldStartable;
 import appeng.core.worlddata.IOnWorldStoppable;
+import appeng.core.worlddata.converter.ConverterMetadata;
+import appeng.core.worlddata.converter.Converters;
 import appeng.hooks.TickHandler;
 import appeng.services.compass.CompassRegion;
 import appeng.services.compass.ServerCompassService;
@@ -19,7 +20,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * A class to convert compass data from the old format (in the AE2/compass folder) to the new format
- * {@link CompassRegion}. The converter will only run if the detected {@link CompassMetadata} is outdated.
+ * {@link CompassRegion}. The converter will only run if the corresponding {@link ConverterMetadata} is outdated.
  * <p>
  * A new instance will be registered to the event bus when a save is loaded, and unregistered when exited.
  */
@@ -36,10 +37,10 @@ public final class CompassDataConverter implements IOnWorldStartable, IOnWorldSt
         if (world.isRemote) {
             return;
         }
-        var metadata = CompassMetadata.get((WorldServer) world);
-        if (metadata.isUpToDate(world)) {
+        var metadata = ConverterMetadata.get((WorldServer) world);
+        if (metadata.isUpToDate(world, Converters.COMPASS)) {
             // New worlds are considered up-to-date, but need to update the metadata
-            metadata.setVersion(CompassMetadata.CURRENT_VERSION);
+            metadata.setVersion(ConverterMetadata.CURRENT_VERSION, Converters.COMPASS);
             return;
         }
 
@@ -48,7 +49,7 @@ public final class CompassDataConverter implements IOnWorldStartable, IOnWorldSt
         var dimId = world.provider.getDimension();
         AELog.info("Found outdated compass metadata [version=%d] in dimension [%d] "
                         + "- converting old compass data...",
-                metadata.getVersion(),
+                metadata.getVersion(Converters.COMPASS),
                 dimId);
         var cr = new OldCompassReader(dimId, worldCompassFolder);
         cr.loadRegions().forEach(region -> {
@@ -59,11 +60,10 @@ public final class CompassDataConverter implements IOnWorldStartable, IOnWorldSt
                     return null;
                 });
             }
-            region.close();
         });
         AELog.info("Finished converting old compass data in " + watch.elapsed(TimeUnit.MILLISECONDS) + " ms");
         // Make sure to update the metadata
-        metadata.setVersion(CompassMetadata.CURRENT_VERSION);
+        metadata.setVersion(ConverterMetadata.CURRENT_VERSION, Converters.COMPASS);
     }
 
     @Override

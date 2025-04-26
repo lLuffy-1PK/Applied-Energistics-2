@@ -25,6 +25,8 @@ import java.util.Random;
 public class MeteoriteStructurePiece extends StructureComponent {
     public static final String ID = "Ae2MP";
     private static final int WATER_SCAN_RADIUS = 32;
+    private static final int NEW_GEN_PIECE = 1;
+    private static final int OLD_GEN_PIECE = 2;
 
     private PlacedMeteoriteSettings settings;
 
@@ -42,9 +44,15 @@ public class MeteoriteStructurePiece extends StructureComponent {
             boolean pureCrater,
             CraterLakeState craterLake,
             FalloutMode fallout) {
-        super(1);
+        super(NEW_GEN_PIECE);
         this.settings = new PlacedMeteoriteSettings(center, radius, craterType, pureCrater, craterLake, fallout);
         this.boundingBox = createBoundingBox(center);
+    }
+
+    public MeteoriteStructurePiece(PlacedMeteoriteSettings settings) {
+        super(OLD_GEN_PIECE);
+        this.settings = settings;
+        this.boundingBox = createBoundingBox(settings.getPos());
     }
 
     private static StructureBoundingBox createBoundingBox(BlockPos origin) {
@@ -83,6 +91,10 @@ public class MeteoriteStructurePiece extends StructureComponent {
         var intersectedBB = StructureBoundingBoxUtils.intersection(loadedBB, this.boundingBox);
         if (settings.getPos().getY() == Integer.MIN_VALUE || !settings.isCraterLakeSet()) {
             finalizeProperties(world, intersectedBB);
+        }
+        // The old generation method operates on one chunk; the new method operates in the middle of 2x2 chunks.
+        if (this.getComponentType() == OLD_GEN_PIECE) {
+            intersectedBB.offset(-8, 0, -8);
         }
         MeteoritePlacer.place(world, this.settings, random, intersectedBB);
         return true;

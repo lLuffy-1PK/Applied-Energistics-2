@@ -21,6 +21,7 @@ package appeng.core.worlddata;
 
 import appeng.core.AEConfig;
 import appeng.services.compass.converter.CompassDataConverter;
+import appeng.worldgen.meteorite.converter.MeteoriteDataConverter;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import net.minecraft.server.MinecraftServer;
@@ -65,6 +66,7 @@ public final class WorldData implements IWorldData {
     private final File compassDirectory;
 
     private CompassDataConverter compassDataConverter;
+    private MeteoriteDataConverter meteoriteDataConverter;
 
     private final Configuration sharedConfig;
 
@@ -90,9 +92,10 @@ public final class WorldData implements IWorldData {
 
         // create save-specific converters
         this.compassDataConverter = new CompassDataConverter(this.compassDirectory);
+        this.meteoriteDataConverter = new MeteoriteDataConverter(this.spawnDirectory);
 
-        this.startables = Lists.newArrayList(playerData, storageData, compassDataConverter);
-        this.stoppables = Lists.newArrayList(playerData, storageData, compassDataConverter);
+        this.startables = Lists.newArrayList(playerData, storageData, compassDataConverter, meteoriteDataConverter);
+        this.stoppables = Lists.newArrayList(playerData, storageData, compassDataConverter, meteoriteDataConverter);
     }
 
     /**

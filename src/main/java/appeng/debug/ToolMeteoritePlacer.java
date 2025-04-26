@@ -21,7 +21,7 @@ package appeng.debug;
 
 import appeng.items.AEBaseItem;
 import appeng.util.Platform;
-import appeng.worldgen.meteorite.Constants;
+import appeng.worldgen.meteorite.MeteorConstants;
 import appeng.worldgen.meteorite.MeteoritePlacer;
 import appeng.worldgen.meteorite.debug.MeteoriteSpawner;
 import appeng.worldgen.meteorite.settings.CraterType;
@@ -86,8 +86,9 @@ public class ToolMeteoritePlacer extends AEBaseItem {
         }
 
         // See MapGenMeteorite.Start for original code
-        float coreRadius = world.rand.nextFloat() * (Constants.MAX_METEOR_RADIUS - Constants.MIN_METEOR_RADIUS)
-                + Constants.MIN_METEOR_RADIUS;
+        float coreRadius = world.rand.nextFloat()
+                * (MeteorConstants.MAX_METEOR_RADIUS - MeteorConstants.MIN_METEOR_RADIUS)
+                + MeteorConstants.MIN_METEOR_RADIUS;
         boolean pureCrater = world.rand.nextFloat() > 0.5f;
         CraterType craterType = getCraterType(heldStack);
 

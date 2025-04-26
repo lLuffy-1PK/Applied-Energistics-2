@@ -60,7 +60,7 @@ public final class MeteoriteWorldGen {
         MapGenStructureIO.registerStructureComponent(MeteoriteStructurePiece.class, MeteoriteStructurePiece.ID);
     }
 
-    private MapGenMeteorite getGenerator(World world) {
+    public MapGenMeteorite getGenerator(World world) {
         var key = world.provider.getDimension();
         var generator = meteoriteGenerators.get(key);
         if (generator == null) {

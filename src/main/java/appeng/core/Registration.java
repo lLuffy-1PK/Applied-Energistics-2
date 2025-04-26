@@ -71,7 +71,7 @@ import appeng.spatial.StorageWorldProvider;
 import appeng.tile.AEBaseTile;
 import appeng.worldgen.MeteoriteWorldGen;
 import appeng.worldgen.QuartzWorldGen;
-import appeng.worldgen.meteorite.Constants;
+import appeng.worldgen.meteorite.MeteorConstants;
 import appeng.worldgen.meteorite.heightmap.HeightMapAccessors;
 import com.google.common.base.Preconditions;
 import net.minecraft.advancements.CriteriaTriggers;
@@ -122,6 +122,7 @@ final class Registration {
     int storageDimensionID;
     Biome storageBiome;
     AdvancementTriggers advancementTriggers;
+    MeteoriteWorldGen meteoriteGen;
 
     void preInitialize(final FMLPreInitializationEvent event) {
         Capabilities.register();
@@ -204,7 +205,8 @@ final class Registration {
         }
         // Meteor loot table
         if (AEConfig.instance().isFeatureEnabled(AEFeature.SPAWN_PRESSES_IN_METEORITES)) {
-            LootTableList.register(new ResourceLocation(AppEng.MOD_ID, Constants.METEOR_LOOT_TABLE));
+            LootTableList.register(new ResourceLocation(AppEng.MOD_ID,
+                    MeteorConstants.METEOR_LOOT_TABLE));
             LootConditionManager.registerCondition(new LootCanRoll.Serializer());
             LootFunctionManager.registerFunction(new TallyLoot.Serializer());
             LootFunctionManager.registerFunction(new ToMaybeItem.Serializer());
@@ -481,7 +483,7 @@ final class Registration {
         }
 
         if (AEConfig.instance().isFeatureEnabled(AEFeature.METEORITE_WORLD_GEN)) {
-            var meteoriteGen = new MeteoriteWorldGen();
+            this.meteoriteGen = new MeteoriteWorldGen();
             meteoriteGen.registerStructure();
             MinecraftForge.EVENT_BUS.register(meteoriteGen);
             MinecraftForge.TERRAIN_GEN_BUS.register(HeightMapAccessors.class);

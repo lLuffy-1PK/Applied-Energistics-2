@@ -11,6 +11,7 @@ public final class PlacedMeteoriteSettings {
     private static final String TAG_FALLOUT = "fallout";
     private static final String TAG_PURE = "pure";
     private static final String TAG_LAKE = "lake";
+    private static final String TAG_DECAY = "decay";
 
     private BlockPos pos;
     private final float meteoriteRadius;
@@ -18,6 +19,7 @@ public final class PlacedMeteoriteSettings {
     private final boolean pureCrater;
     private CraterLakeState craterLake;
     private final FalloutMode fallout;
+    private final boolean doDecay;
 
     public PlacedMeteoriteSettings(BlockPos pos, float meteoriteRadius, CraterType craterType, boolean pureCrater,
                                    CraterLakeState craterLake, FalloutMode fallout) {
@@ -27,6 +29,18 @@ public final class PlacedMeteoriteSettings {
         this.pureCrater = pureCrater;
         this.craterLake = craterLake;
         this.fallout = fallout;
+        this.doDecay = true;
+    }
+
+    public PlacedMeteoriteSettings(BlockPos pos, float meteoriteRadius, CraterType craterType, boolean pureCrater,
+                                   CraterLakeState craterLake, FalloutMode fallout, boolean doDecay) {
+        this.pos = pos;
+        this.meteoriteRadius = meteoriteRadius;
+        this.craterType = craterType;
+        this.pureCrater = pureCrater;
+        this.craterLake = craterLake;
+        this.fallout = fallout;
+        this.doDecay = doDecay;
     }
 
     public BlockPos getPos() {
@@ -61,6 +75,10 @@ public final class PlacedMeteoriteSettings {
         return craterLake == CraterLakeState.TRUE;
     }
 
+    public boolean shouldDecay() {
+        return doDecay;
+    }
+
     public void setHeight(int y) {
         this.pos = new BlockPos(pos.getX(), y, pos.getZ());
     }
@@ -76,8 +94,12 @@ public final class PlacedMeteoriteSettings {
         FalloutMode fallout = FalloutMode.values()[nbt.getByte(TAG_FALLOUT)];
         boolean pureCrater = nbt.getBoolean(TAG_PURE);
         CraterLakeState craterLake = CraterLakeState.values()[nbt.getByte(TAG_LAKE)];
+        boolean doDecay = true;
+        if (nbt.hasKey(TAG_DECAY)) {
+            doDecay = nbt.getBoolean(TAG_DECAY);
+        }
 
-        return new PlacedMeteoriteSettings(pos, meteoriteRadius, craterType, pureCrater, craterLake, fallout);
+        return new PlacedMeteoriteSettings(pos, meteoriteRadius, craterType, pureCrater, craterLake, fallout, doDecay);
     }
 
     public NBTTagCompound write(NBTTagCompound nbt) {
@@ -87,6 +109,7 @@ public final class PlacedMeteoriteSettings {
         nbt.setByte(TAG_FALLOUT, (byte) fallout.ordinal());
         nbt.setBoolean(TAG_PURE, this.pureCrater);
         nbt.setByte(TAG_LAKE, (byte) this.craterLake.ordinal());
+        nbt.setBoolean(TAG_DECAY, this.doDecay);
         return nbt;
     }
 

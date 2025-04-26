@@ -55,6 +55,9 @@ import net.minecraft.world.storage.loot.LootTable;
 import java.util.List;
 import java.util.Random;
 
+import static appeng.worldgen.meteorite.MeteorConstants.MAX_METEOR_RADIUS;
+import static appeng.worldgen.meteorite.MeteorConstants.METEOR_LOOT_TABLE;
+
 
 public final class MeteoritePlacer {
     private static final double METEOR_UPPER_CURVATURE = 1.4D;
@@ -79,6 +82,8 @@ public final class MeteoritePlacer {
     private final boolean pureCrater;
     private final boolean craterLake;
     private final Fallout type;
+    // Only relevant for old meteor settings
+    private final boolean doDecay;
 
     public MeteoritePlacer(World world, PlacedMeteoriteSettings settings,
                            Random random, StructureBoundingBox structureBB) {
@@ -96,6 +101,7 @@ public final class MeteoritePlacer {
         this.pureCrater = settings.isPureCrater();
         this.craterLake = settings.isCraterLake();
         this.squaredMeteoriteSize = this.meteoriteSize * this.meteoriteSize;
+        this.doDecay = settings.shouldDecay();
 
         double craterSize = this.meteoriteSize * 2 + CRATER_RADIUS;
         this.squaredCraterSize = craterSize * craterSize;
@@ -121,7 +127,7 @@ public final class MeteoritePlacer {
         this.placeMeteorite();
 
         // collapse blocks...
-        if (placeCrater) {
+        if (doDecay && placeCrater) {
             this.decay();
         }
         if (craterLake) {
@@ -197,7 +203,7 @@ public final class MeteoritePlacer {
         final InventoryAdaptor ap = InventoryAdaptor.getAdaptor(te, EnumFacing.UP);
         if (ap != null) {
             LootTable table = world.getLootTableManager().getLootTableFromLocation(
-                    new ResourceLocation(AppEng.MOD_ID, Constants.METEOR_LOOT_TABLE));
+                    new ResourceLocation(AppEng.MOD_ID, METEOR_LOOT_TABLE));
             LootContext ctx = new TallyingLootContext.Builder((WorldServer) world).build();
             List<ItemStack> stacks = table.generateLootForPools(world.rand, ctx);
             for (var stack : stacks) {
@@ -213,16 +219,16 @@ public final class MeteoritePlacer {
      * Upper half: 0.7 * (x - x_0)^2 + METEOR_LOWER_CURVATURE * (y - y_0)^2 + 0.7 * (z - z_0)^2
      */
     private void placeMeteoriteSkyStone(Block block) {
-        final int meteorXLength = clamper.minX(x - Constants.MAX_METEOR_RADIUS);
-        final int meteorXHeight = clamper.maxX(x + Constants.MAX_METEOR_RADIUS);
-        final int meteorZLength = clamper.minZ(z - Constants.MAX_METEOR_RADIUS);
-        final int meteorZHeight = clamper.maxZ(z + Constants.MAX_METEOR_RADIUS);
+        final int meteorXLength = clamper.minX(x - MAX_METEOR_RADIUS);
+        final int meteorXHeight = clamper.maxX(x + MAX_METEOR_RADIUS);
+        final int meteorZLength = clamper.minZ(z - MAX_METEOR_RADIUS);
+        final int meteorZHeight = clamper.maxZ(z + MAX_METEOR_RADIUS);
 
         MutableBlockPos pos = new MutableBlockPos();
         for (int i = meteorXLength; i <= meteorXHeight; i++) {
             pos.setPos(i, pos.getY(), pos.getZ());
 
-            for (int j = y - Constants.MAX_METEOR_RADIUS; j < y + Constants.MAX_METEOR_RADIUS; j++) {
+            for (int j = y - MAX_METEOR_RADIUS; j < y + MAX_METEOR_RADIUS; j++) {
                 pos.setY(j);
 
                 for (int k = meteorZLength; k <= meteorZHeight; k++) {
@@ -261,7 +267,7 @@ public final class MeteoritePlacer {
                 pos.setPos(pos.getX(), pos.getY(), k);
                 posUp.setPos(posUp.getX(), posUp.getY(), k);
                 posDown.setPos(posDown.getX(), posDown.getY(), k);
-                for (int j = y - Constants.MAX_METEOR_RADIUS + 1; j < y + 30; j++) {
+                for (int j = y - MAX_METEOR_RADIUS + 1; j < y + 30; j++) {
                     pos.setY(j);
                     posUp.setY(j + 1);
                     posDown.setY(j - 1);

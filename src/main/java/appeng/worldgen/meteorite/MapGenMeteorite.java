@@ -2,11 +2,16 @@ package appeng.worldgen.meteorite;
 
 import appeng.core.AEConfig;
 import appeng.util.Platform;
+import appeng.worldgen.meteorite.fallout.FalloutMode;
 import appeng.worldgen.meteorite.settings.CraterLakeState;
 import appeng.worldgen.meteorite.settings.CraterType;
-import appeng.worldgen.meteorite.fallout.FalloutMode;
+import appeng.worldgen.meteorite.settings.PlacedMeteoriteSettings;
+import net.minecraft.crash.CrashReport;
+import net.minecraft.crash.CrashReportCategory;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.ReportedException;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.gen.structure.MapGenStructure;
@@ -19,6 +24,41 @@ import java.util.Random;
 
 public class MapGenMeteorite extends MapGenStructure {
     public static final String ID = "ae2_meteorite";
+
+    public synchronized void addOldMeteor(World worldIn, final int chunkX, final int chunkZ,
+                                          PlacedMeteoriteSettings settings) {
+        this.initializeStructureData(worldIn);
+
+        if (!this.structureMap.containsKey(ChunkPos.asLong(chunkX, chunkZ)))
+        {
+            this.rand.nextInt();
+
+            try {
+                StructureStart structurestart = this.getOldStructureStart(chunkX, chunkZ, settings);
+                this.structureMap.put(ChunkPos.asLong(chunkX, chunkZ), structurestart);
+
+                if (structurestart.isSizeableStructure()) {
+                    this.setStructureStart(chunkX, chunkZ, structurestart);
+                }
+            }
+            catch (Throwable throwable)
+            {
+                CrashReport crashreport = CrashReport.makeCrashReport(
+                        throwable, "Exception preparing structure feature");
+                CrashReportCategory crashreportcategory = crashreport.makeCategory(
+                        "Feature being prepared");
+                crashreportcategory.addDetail("Is feature chunk", () ->
+                        "True (Manually added)");
+                crashreportcategory.addCrashSection(
+                        "Chunk location", String.format("%d,%d", chunkX, chunkZ));
+                crashreportcategory.addDetail("Chunk pos hash", () ->
+                        String.valueOf(ChunkPos.asLong(chunkX, chunkZ)));
+                crashreportcategory.addDetail("Structure type", () ->
+                        MapGenMeteorite.this.getClass().getCanonicalName());
+                throw new ReportedException(crashreport);
+            }
+        }
+    }
 
     @Override
     @NotNull
@@ -62,6 +102,10 @@ public class MapGenMeteorite extends MapGenStructure {
         return new Start(this.world, meteorSeed, chunkX, chunkZ);
     }
 
+    protected StructureStart getOldStructureStart(int chunkX, int chunkZ, PlacedMeteoriteSettings settings) {
+        return new Start(chunkX, chunkZ, settings);
+    }
+
     public static class Start extends StructureStart {
 
         /**
@@ -76,8 +120,9 @@ public class MapGenMeteorite extends MapGenStructure {
         public Start(World worldIn, long seed, int chunkX, int chunkZ) {
             super(chunkX, chunkZ);
             var rng = new Random(seed);
-            final float meteoriteRadius = rng.nextFloat() * (Constants.MAX_METEOR_RADIUS - Constants.MIN_METEOR_RADIUS)
-                    + Constants.MIN_METEOR_RADIUS;
+            final float meteoriteRadius = rng.nextFloat()
+                    * (MeteorConstants.MAX_METEOR_RADIUS - MeteorConstants.MIN_METEOR_RADIUS)
+                    + MeteorConstants.MIN_METEOR_RADIUS;
             final int centerX = (chunkX << 4) + rng.nextInt(16);
             final int centerZ = (chunkZ << 4) + rng.nextInt(16);
             // 1.12 doesn't have access to heightmaps during generation, set the elevation later.
@@ -99,6 +144,15 @@ public class MapGenMeteorite extends MapGenStructure {
                     pureCrater,
                     craterLake,
                     fallout));
+            this.updateBoundingBox();
+        }
+
+        /**
+         * For use when the settings are known (from converting old meteor data).
+         */
+        public Start(int chunkX, int chunkZ, PlacedMeteoriteSettings settings) {
+            super(chunkX, chunkZ);
+            this.components.add(new MeteoriteStructurePiece(settings));
             this.updateBoundingBox();
         }
 

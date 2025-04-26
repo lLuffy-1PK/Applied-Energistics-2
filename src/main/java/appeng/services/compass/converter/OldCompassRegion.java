@@ -1,6 +1,8 @@
 package appeng.services.compass.converter;
 
 
+import appeng.core.worlddata.converter.IOldFileRegion;
+import appeng.core.worlddata.converter.OldDataReader;
 import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import net.minecraft.util.math.ChunkPos;
@@ -15,12 +17,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 
-public final class OldCompassRegion {
+public final class OldCompassRegion implements IOldFileRegion {
     private final File worldCompassFolder;
     private final int regionX;
     private final int regionZ;
 
-    private boolean hasFile = false;
     private ByteBuffer buffer;
 
     public OldCompassRegion(@Nonnull final File worldCompassFolder, @Nonnull String fileName) {
@@ -28,20 +29,13 @@ public final class OldCompassRegion {
         Preconditions.checkArgument(worldCompassFolder.isDirectory());
 
         this.worldCompassFolder = worldCompassFolder;
-        var matcher = OldCompassReader.regionNameFormat.matcher(fileName);
+        var matcher = OldDataReader.regionNameFormat.matcher(fileName);
         // The file name was already verified by the reader
         Preconditions.checkArgument(matcher.find());
         this.regionX = NumberUtils.toInt(matcher.group(2));
         this.regionZ = NumberUtils.toInt(matcher.group(3));
 
         this.openFile(fileName);
-    }
-
-    public void close() {
-        if (this.hasFile) {
-            this.buffer = null;
-            this.hasFile = false;
-        }
     }
 
     public Collection<ChunkPos> getBeacons() {
@@ -56,13 +50,11 @@ public final class OldCompassRegion {
 
     private IntArrayList getBeaconIndices() {
         var indices = new IntArrayList();
-        if (this.hasFile) {
             for (int i = 0; i < buffer.limit(); i++) {
                 if (buffer.get(i) != 0) {
                     indices.add(i);
                 }
             }
-        }
         return indices;
     }
 
@@ -123,24 +115,17 @@ public final class OldCompassRegion {
         }
     }
 
-    private void openFile(String fileName) {
-        if (this.hasFile) {
-            return;
-        }
-
+    @Override
+    public void openFile(String fileName) {
         final File file = new File(this.worldCompassFolder, fileName);
         if (this.isFileExistent(file)) {
             try (var raf = new RandomAccessFile(file, "r")){
                 final FileChannel fc = raf.getChannel();
                 this.buffer = fc.map(FileChannel.MapMode.READ_ONLY, 0, 0x400 * 0x400);// fc.size() );
-                this.hasFile = true;
             } catch (final Throwable t) {
                 throw new CompassException(t);
             }
         }
     }
 
-    private boolean isFileExistent(final File file) {
-        return file.exists() && file.isFile();
-    }
 }
