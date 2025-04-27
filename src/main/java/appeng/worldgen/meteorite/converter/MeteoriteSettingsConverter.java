@@ -15,7 +15,6 @@ public class MeteoriteSettingsConverter {
     private static final String TAG_Z = "z";
     private static final String TAG_BLOCK = "blk";
     private static final String TAG_METEORITE_RADIUS = "real_sizeOfMeteorite";
-    private static final String TAG_LAVA = "lava";
     private static final String TAG_SKY_MODE = "skyMode";
 
     public static PlacedMeteoriteSettings convertOld(NBTTagCompound oldSettings) {
@@ -24,7 +23,8 @@ public class MeteoriteSettingsConverter {
                 oldSettings.getInteger(TAG_Z));
         float radius = (float) oldSettings.getDouble(TAG_METEORITE_RADIUS);
 
-        var isLava = oldSettings.getBoolean(TAG_LAVA);
+        // Can't suppress block updates from fluids, so let's just ignore the old lava tag, even if we lose parity.
+        var isLava = false;
         var skyMode = oldSettings.getInteger(TAG_SKY_MODE);
         var craterType = determineCraterType(isLava, skyMode);
 
@@ -32,9 +32,11 @@ public class MeteoriteSettingsConverter {
         var falloutMode = determineFalloutMode(falloutBlock);
 
         var doDecay = skyMode > 3;
+        // No block updates, because we can only work with 1 chunk at a time (this prevents cascading worldgen).
+        var update = false;
 
         return new PlacedMeteoriteSettings(pos, radius, craterType,
-                false, CraterLakeState.FALSE, falloutMode, doDecay);
+                false, CraterLakeState.FALSE, falloutMode, doDecay, update);
     }
 
     private static CraterType determineCraterType(boolean isLava, int skyMode) {

@@ -23,10 +23,8 @@ import appeng.api.AEApi;
 import appeng.api.definitions.IBlockDefinition;
 import appeng.block.storage.BlockSkyChest;
 import appeng.core.AEConfig;
-import appeng.core.AppEng;
 import appeng.core.features.AEFeature;
 import appeng.loot.ChestLoot;
-import appeng.loot.TallyingLootContext;
 import appeng.services.compass.ServerCompassService;
 import appeng.util.InventoryAdaptor;
 import appeng.util.Platform;
@@ -38,10 +36,8 @@ import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.init.Blocks;
-import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockPos.MutableBlockPos;
@@ -50,14 +46,10 @@ import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.gen.structure.StructureBoundingBox;
-import net.minecraft.world.storage.loot.LootContext;
-import net.minecraft.world.storage.loot.LootTable;
 
-import java.util.List;
 import java.util.Random;
 
 import static appeng.worldgen.meteorite.MeteorConstants.MAX_METEOR_RADIUS;
-import static appeng.worldgen.meteorite.MeteorConstants.METEOR_LOOT_TABLE;
 
 
 public final class MeteoritePlacer {
@@ -67,7 +59,7 @@ public final class MeteoritePlacer {
     private static final int CRATER_RADIUS = 5;
 
     private final IBlockDefinition skyStoneDefinition;
-    private final MeteoriteBlockPutter putter = new MeteoriteBlockPutter();
+    private final MeteoriteBlockPutter putter;
     private final BoundingBoxClamper clamper;
     private final StructureBoundingBox boundingBox;
     private final World world;
@@ -83,8 +75,9 @@ public final class MeteoritePlacer {
     private final boolean pureCrater;
     private final boolean craterLake;
     private final Fallout type;
-    // Only relevant for old meteor settings
+    // Below fields are only relevant for old meteor settings
     private final boolean doDecay;
+    private final boolean update;
 
     public MeteoritePlacer(World world, PlacedMeteoriteSettings settings,
                            Random random, StructureBoundingBox structureBB) {
@@ -103,6 +96,8 @@ public final class MeteoritePlacer {
         this.craterLake = settings.isCraterLake();
         this.squaredMeteoriteSize = this.meteoriteSize * this.meteoriteSize;
         this.doDecay = settings.shouldDecay();
+        this.update = settings.shouldUpdate();
+        this.putter = new MeteoriteBlockPutter(this.update);
 
         double craterSize = this.meteoriteSize * 2 + CRATER_RADIUS;
         this.squaredCraterSize = craterSize * craterSize;
@@ -278,7 +273,7 @@ public final class MeteoritePlacer {
                     final var upperBlockState = world.getBlockState(posUp);
                     if (state.getMaterial().isReplaceable()) {
                         if (upperBlockState.getMaterial() != Material.AIR) {
-                            world.setBlockState(pos, upperBlockState);
+                            this.putter.put(world, pos, upperBlockState);
                         } else if (randomShit < 100 * this.squaredCraterSize) {
                             final double dx = i - x;
                             final double dy = j - y;
