@@ -107,7 +107,7 @@ public class ToolMeteoritePlacer extends AEBaseItem {
                 pos.getX() - range, pos.getY() - 10, pos.getZ() - range,
                 pos.getX() + range, pos.getY() + 10, pos.getZ() + range);
 
-        MeteoritePlacer.place(world, spawned, boundingBox);
+        MeteoritePlacer.place(world, spawned, boundingBox, true);
 
         player.sendMessage(new TextComponentString("Spawned at y=" + spawned.getPos().getY() + " range=" + range));
 

@@ -37,12 +37,10 @@ public class MeteoriteSettingsConverter {
         var falloutMode = determineFalloutMode(falloutBlock);
 
         var doDecay = skyMode > 3;
-        // No block updates, because we can only work with 1 chunk at a time (this prevents cascading worldgen).
-        var update = false;
         var seed = generateSeed(pos, world);
 
         return new PlacedMeteoriteSettings(seed, pos, radius, craterType,
-                false, CraterLakeState.FALSE, falloutMode, doDecay, update);
+                false, CraterLakeState.FALSE, falloutMode, doDecay);
     }
 
     private static CraterType determineCraterType(boolean isLava, int skyMode) {

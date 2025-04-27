@@ -82,9 +82,10 @@ public final class MeteoritePlacer {
     // Below fields are only relevant for old meteor settings
     private final boolean doDecay;
 
-    public MeteoritePlacer(World world, PlacedMeteoriteSettings settings, StructureBoundingBox structureBB) {
+    public MeteoritePlacer(World world, PlacedMeteoriteSettings settings,
+                           StructureBoundingBox structureBB, boolean shouldUpdate) {
         this.skyStoneDefinition = AEApi.instance().definitions().blocks().skyStoneBlock();
-        this.putter = new MeteoriteBlockPutter(settings.shouldUpdate());
+        this.putter = new MeteoriteBlockPutter(shouldUpdate);
         this.clamper = new BoundingBoxClamper(structureBB);
         this.boundingBox = structureBB;
         this.world = world;
@@ -111,8 +112,9 @@ public final class MeteoritePlacer {
         this.type = getFallout(world, localCenter, settings.getFallout());
     }
 
-    public static void place(World world, PlacedMeteoriteSettings settings, StructureBoundingBox structureBB) {
-        var placer = new MeteoritePlacer(world, settings, structureBB);
+    public static void place(World world, PlacedMeteoriteSettings settings,
+                             StructureBoundingBox structureBB, boolean shouldUpdate) {
+        var placer = new MeteoritePlacer(world, settings, structureBB, shouldUpdate);
         placer.place();
     }
 

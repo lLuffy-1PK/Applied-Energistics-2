@@ -93,11 +93,16 @@ public class MeteoriteStructurePiece extends StructureComponent {
         if (settings.getPos().getY() == Integer.MIN_VALUE || !settings.isCraterLakeSet()) {
             finalizeProperties(world, intersectedBB);
         }
+        boolean shouldUpdate;
         // The old generation method operates on one chunk; the new method operates in the middle of 2x2 chunks.
         if (this.getComponentType() == OLD_GEN_PIECE) {
             intersectedBB.offset(-8, 0, -8);
+            // Have to avoid cascading worldgen.
+            shouldUpdate = false;
+        } else {
+            shouldUpdate = true;
         }
-        MeteoritePlacer.place(world, this.settings, intersectedBB);
+        MeteoritePlacer.place(world, this.settings, intersectedBB, shouldUpdate);
         return true;
     }
 
