@@ -35,6 +35,7 @@ import net.minecraftforge.event.LootTableLoadEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 import java.util.List;
+import java.util.Random;
 
 import static appeng.worldgen.meteorite.MeteorConstants.METEOR_LOOT_TABLE;
 
@@ -69,10 +70,10 @@ public class ChestLoot {
         }
     }
 
-    public static List<ItemStack> generateMeteorLoot(World world) {
+    public static List<ItemStack> generateMeteorLoot(World world, Random rand) {
         LootTable table = world.getLootTableManager().getLootTableFromLocation(
                 new ResourceLocation(AppEng.MOD_ID, METEOR_LOOT_TABLE));
         LootContext ctx = new TallyingLootContext.Builder((WorldServer) world).build();
-        return table.generateLootForPools(world.rand, ctx);
+        return table.generateLootForPools(rand, ctx);
     }
 }

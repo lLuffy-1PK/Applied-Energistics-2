@@ -5,6 +5,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.BlockPos;
 
 public final class PlacedMeteoriteSettings {
+    private static final String TAG_SEED = "seed";
     private static final String TAG_POS = "pos";
     private static final String TAG_RADIUS = "radius";
     private static final String TAG_CRATER = "type";
@@ -14,6 +15,7 @@ public final class PlacedMeteoriteSettings {
     private static final String TAG_DECAY = "decay";
     private static final String TAG_UPDATE = "update";
 
+    private final long seed;
     private BlockPos pos;
     private final float meteoriteRadius;
     private final CraterType craterType;
@@ -23,8 +25,9 @@ public final class PlacedMeteoriteSettings {
     private final boolean doDecay;
     private final boolean update;
 
-    public PlacedMeteoriteSettings(BlockPos pos, float meteoriteRadius, CraterType craterType, boolean pureCrater,
-                                   CraterLakeState craterLake, FalloutMode fallout) {
+    public PlacedMeteoriteSettings(long seed, BlockPos pos, float meteoriteRadius, CraterType craterType,
+                                   boolean pureCrater, CraterLakeState craterLake, FalloutMode fallout) {
+        this.seed = seed;
         this.pos = pos;
         this.meteoriteRadius = meteoriteRadius;
         this.craterType = craterType;
@@ -35,8 +38,10 @@ public final class PlacedMeteoriteSettings {
         this.update = true;
     }
 
-    public PlacedMeteoriteSettings(BlockPos pos, float meteoriteRadius, CraterType craterType, boolean pureCrater,
-                                   CraterLakeState craterLake, FalloutMode fallout, boolean doDecay, boolean update) {
+    public PlacedMeteoriteSettings(long seed, BlockPos pos, float meteoriteRadius, CraterType craterType,
+                                   boolean pureCrater, CraterLakeState craterLake, FalloutMode fallout,
+                                   boolean doDecay, boolean update) {
+        this.seed = seed;
         this.pos = pos;
         this.meteoriteRadius = meteoriteRadius;
         this.craterType = craterType;
@@ -45,6 +50,10 @@ public final class PlacedMeteoriteSettings {
         this.fallout = fallout;
         this.doDecay = doDecay;
         this.update = update;
+    }
+
+    public long getSeed() {
+        return seed;
     }
 
     public BlockPos getPos() {
@@ -96,6 +105,7 @@ public final class PlacedMeteoriteSettings {
     }
 
     public static PlacedMeteoriteSettings read(NBTTagCompound nbt) {
+        long seed = nbt.getLong(TAG_SEED);
         BlockPos pos = new BlockPos(BlockPos.fromLong(nbt.getLong(TAG_POS)));
         float meteoriteRadius = nbt.getFloat(TAG_RADIUS);
         CraterType craterType = CraterType.values()[nbt.getByte(TAG_CRATER)];
@@ -113,11 +123,12 @@ public final class PlacedMeteoriteSettings {
             update = nbt.getBoolean(TAG_UPDATE);
         }
 
-        return new PlacedMeteoriteSettings(pos, meteoriteRadius, craterType, pureCrater,
+        return new PlacedMeteoriteSettings(seed, pos, meteoriteRadius, craterType, pureCrater,
                 craterLake, fallout, doDecay, update);
     }
 
     public NBTTagCompound write(NBTTagCompound nbt) {
+        nbt.setLong(TAG_SEED, seed);
         nbt.setLong(TAG_POS, pos.toLong());
         nbt.setFloat(TAG_RADIUS, meteoriteRadius);
         nbt.setByte(TAG_CRATER, (byte) craterType.ordinal());
@@ -131,8 +142,8 @@ public final class PlacedMeteoriteSettings {
 
     @Override
     public String toString() {
-        return "PlacedMeteoriteSettings [pos=" + pos + ", meteoriteRadius=" + meteoriteRadius + ", craterType="
-                + craterType + ", fallout=" + fallout + ", pureCrater=" + pureCrater + ", craterLake=" + craterLake
-                + ", doDecay=" + doDecay + ", update=" + update + "]";
+        return "PlacedMeteoriteSettings [seed=" + seed + ", pos=" + pos + ", meteoriteRadius=" + meteoriteRadius +
+                ", craterType=" + craterType + ", fallout=" + fallout + ", pureCrater=" + pureCrater + ", craterLake="
+                + craterLake + ", doDecay=" + doDecay + ", update=" + update + "]";
     }
 }

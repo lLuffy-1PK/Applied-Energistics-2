@@ -138,6 +138,7 @@ public class MapGenMeteorite extends MapGenStructure {
             var fallout = FalloutMode.fromBiome(spawnBiome);
 
             this.components.add(new MeteoriteStructurePiece(
+                    seed,
                     centerPos,
                     meteoriteRadius,
                     craterType,

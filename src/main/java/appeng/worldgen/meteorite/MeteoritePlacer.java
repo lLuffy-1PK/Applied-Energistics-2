@@ -58,12 +58,16 @@ public final class MeteoritePlacer {
     private static final double CRATER_CURVATURE = 0.02D;
     private static final int CRATER_RADIUS = 5;
 
+    private static final long SEED_OFFSET_GEN = 1;
+    private static final long SEED_OFFSET_LOOT = 2;
+
     private final IBlockDefinition skyStoneDefinition;
     private final MeteoriteBlockPutter putter;
     private final BoundingBoxClamper clamper;
     private final StructureBoundingBox boundingBox;
     private final World world;
-    private final Random random;
+    private final Random randomForGen;
+    private final Random randomForLoot;
     private final int x;
     private final int y;
     private final int z;
@@ -77,15 +81,15 @@ public final class MeteoritePlacer {
     private final Fallout type;
     // Below fields are only relevant for old meteor settings
     private final boolean doDecay;
-    private final boolean update;
 
-    public MeteoritePlacer(World world, PlacedMeteoriteSettings settings,
-                           Random random, StructureBoundingBox structureBB) {
+    public MeteoritePlacer(World world, PlacedMeteoriteSettings settings, StructureBoundingBox structureBB) {
         this.skyStoneDefinition = AEApi.instance().definitions().blocks().skyStoneBlock();
+        this.putter = new MeteoriteBlockPutter(settings.shouldUpdate());
         this.clamper = new BoundingBoxClamper(structureBB);
         this.boundingBox = structureBB;
         this.world = world;
-        this.random = random;
+        this.randomForGen = new Random(settings.getSeed() + SEED_OFFSET_GEN);
+        this.randomForLoot = new Random(settings.getSeed() + SEED_OFFSET_LOOT);
         this.x = settings.getPos().getX();
         this.y = settings.getPos().getY();
         this.z = settings.getPos().getZ();
@@ -96,8 +100,6 @@ public final class MeteoritePlacer {
         this.craterLake = settings.isCraterLake();
         this.squaredMeteoriteSize = this.meteoriteSize * this.meteoriteSize;
         this.doDecay = settings.shouldDecay();
-        this.update = settings.shouldUpdate();
-        this.putter = new MeteoriteBlockPutter(this.update);
 
         double craterSize = this.meteoriteSize * 2 + CRATER_RADIUS;
         this.squaredCraterSize = craterSize * craterSize;
@@ -109,9 +111,8 @@ public final class MeteoritePlacer {
         this.type = getFallout(world, localCenter, settings.getFallout());
     }
 
-    public static void place(World world, PlacedMeteoriteSettings settings,
-                             Random random, StructureBoundingBox structureBB) {
-        var placer = new MeteoritePlacer(world, settings, random, structureBB);
+    public static void place(World world, PlacedMeteoriteSettings settings, StructureBoundingBox structureBB) {
+        var placer = new MeteoritePlacer(world, settings, structureBB);
         placer.place();
     }
 
@@ -198,7 +199,7 @@ public final class MeteoritePlacer {
         final TileEntity te = world.getTileEntity(pos);
         final InventoryAdaptor ap = InventoryAdaptor.getAdaptor(te, EnumFacing.UP);
         if (ap != null) {
-            var stacks = ChestLoot.generateMeteorLoot(world);
+            var stacks = ChestLoot.generateMeteorLoot(world, this.randomForLoot);
             for (var stack : stacks) {
                 ap.addItems(stack);
             }
@@ -282,18 +283,18 @@ public final class MeteoritePlacer {
 
                             final var lowerBlockState = world.getBlockState(posDown);
                             if (!lowerBlockState.getMaterial().isReplaceable()) {
-                                final double extraRange = random.nextDouble() * 0.6;
+                                final double extraRange = randomForGen.nextDouble() * 0.6;
                                 final double height = this.squaredCraterSize * (extraRange + 0.2)
                                         - Math.abs(dist - this.squaredCraterSize * 1.7);
 
                                 if (lowerBlockState.getMaterial() != Material.AIR
-                                        && height > 0 && random.nextDouble() > 0.6) {
+                                        && height > 0 && randomForGen.nextDouble() > 0.6) {
                                     randomShit++;
                                     this.type.getRandomFall(world, pos);
                                 }
                             }
                         }
-                    } else if (upperBlockState.getMaterial() == Material.AIR && random.nextDouble() > 0.4) {
+                    } else if (upperBlockState.getMaterial() == Material.AIR && randomForGen.nextDouble() > 0.4) {
                         // decay.
                         final double dx = i - x;
                         final double dy = j - y;
@@ -366,7 +367,7 @@ public final class MeteoritePlacer {
         if (currentState.getMaterial() == Material.AIR
                 || (!currentState.getMaterial().isLiquid()
                     && currentState.getMaterial().isReplaceable())) {
-            if (craterType == CraterType.LAVA && random.nextFloat() < 0.075f) {
+            if (craterType == CraterType.LAVA && randomForGen.nextFloat() < 0.075f) {
                 this.putter.put(world, enclosingBlockPos, Blocks.MAGMA);
             } else {
                 this.type.getRandomFall(world, enclosingBlockPos);
@@ -379,10 +380,10 @@ public final class MeteoritePlacer {
 
     private Fallout getFallout(World world, BlockPos pos, FalloutMode mode) {
         return switch (mode) {
-            case SAND -> new FalloutSand(world, pos, this.putter, skyStoneDefinition, random);
-            case TERRACOTTA -> new FalloutCopy(world, pos, this.putter, skyStoneDefinition, random);
-            case ICE_SNOW -> new FalloutSnow(world, pos, this.putter, skyStoneDefinition, random);
-            default -> new Fallout(this.putter, skyStoneDefinition, random);
+            case SAND -> new FalloutSand(world, pos, this.putter, skyStoneDefinition, randomForGen);
+            case TERRACOTTA -> new FalloutCopy(world, pos, this.putter, skyStoneDefinition, randomForGen);
+            case ICE_SNOW -> new FalloutSnow(world, pos, this.putter, skyStoneDefinition, randomForGen);
+            default -> new Fallout(this.putter, skyStoneDefinition, randomForGen);
         };
     }
 }

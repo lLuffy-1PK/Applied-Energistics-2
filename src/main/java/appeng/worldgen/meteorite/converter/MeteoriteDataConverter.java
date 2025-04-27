@@ -57,7 +57,7 @@ public final class MeteoriteDataConverter implements IOnWorldStartable, IOnWorld
         var meteoriteGen = AppEng.instance().getMeteoriteGen().getGenerator(world);
         mr.loadRegions().forEach(region -> {
             for (NBTTagCompound meteor : region.getSettings()) {
-                var newMeteorSettings = MeteoriteSettingsConverter.convertOld(meteor);
+                var newMeteorSettings = MeteoriteSettingsConverter.convertOld(meteor, world);
                 BlockPos centerPos = newMeteorSettings.getPos();
                 var centerChunkPos = new ChunkPos(centerPos);
                 meteoriteGen.addOldMeteor(world, centerChunkPos.x, centerChunkPos.z, newMeteorSettings);

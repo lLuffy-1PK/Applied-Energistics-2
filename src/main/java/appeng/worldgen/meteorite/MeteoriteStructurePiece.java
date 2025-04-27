@@ -38,6 +38,7 @@ public class MeteoriteStructurePiece extends StructureComponent {
     public MeteoriteStructurePiece() {}
 
     public MeteoriteStructurePiece(
+            long seed,
             BlockPos center,
             float radius,
             CraterType craterType,
@@ -45,7 +46,7 @@ public class MeteoriteStructurePiece extends StructureComponent {
             CraterLakeState craterLake,
             FalloutMode fallout) {
         super(NEW_GEN_PIECE);
-        this.settings = new PlacedMeteoriteSettings(center, radius, craterType, pureCrater, craterLake, fallout);
+        this.settings = new PlacedMeteoriteSettings(seed, center, radius, craterType, pureCrater, craterLake, fallout);
         this.boundingBox = createBoundingBox(center);
     }
 
@@ -96,7 +97,7 @@ public class MeteoriteStructurePiece extends StructureComponent {
         if (this.getComponentType() == OLD_GEN_PIECE) {
             intersectedBB.offset(-8, 0, -8);
         }
-        MeteoritePlacer.place(world, this.settings, random, intersectedBB);
+        MeteoritePlacer.place(world, this.settings, intersectedBB);
         return true;
     }
 
