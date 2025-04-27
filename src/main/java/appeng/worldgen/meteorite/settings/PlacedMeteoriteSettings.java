@@ -1,8 +1,10 @@
 package appeng.worldgen.meteorite.settings;
 
+import appeng.worldgen.meteorite.MeteorConstants;
 import appeng.worldgen.meteorite.fallout.FalloutMode;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.BlockPos.MutableBlockPos;
 
 public final class PlacedMeteoriteSettings {
     private static final String TAG_SEED = "seed";
@@ -98,7 +100,11 @@ public final class PlacedMeteoriteSettings {
 
     public static PlacedMeteoriteSettings read(NBTTagCompound nbt) {
         long seed = nbt.getLong(TAG_SEED);
-        BlockPos pos = new BlockPos(BlockPos.fromLong(nbt.getLong(TAG_POS)));
+        MutableBlockPos pos = new MutableBlockPos(BlockPos.fromLong(nbt.getLong(TAG_POS)));
+        // Unset height gets read as y=0, reset it.
+        if (pos.getY() == 0) {
+            pos.setY(MeteorConstants.UNSET_HEIGHT);
+        }
         float meteoriteRadius = nbt.getFloat(TAG_RADIUS);
         CraterType craterType = CraterType.values()[nbt.getByte(TAG_CRATER)];
         FalloutMode fallout = FalloutMode.values()[nbt.getByte(TAG_FALLOUT)];
@@ -110,7 +116,7 @@ public final class PlacedMeteoriteSettings {
             doDecay = nbt.getBoolean(TAG_DECAY);
         }
 
-        return new PlacedMeteoriteSettings(seed, pos, meteoriteRadius, craterType, pureCrater,
+        return new PlacedMeteoriteSettings(seed, pos.toImmutable(), meteoriteRadius, craterType, pureCrater,
                 craterLake, fallout, doDecay);
     }
 

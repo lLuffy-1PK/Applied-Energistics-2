@@ -90,7 +90,7 @@ public class MeteoriteStructurePiece extends StructureComponent {
         // The bounding box within both the loaded BB and structure's full BB. This is the area we should work with,
         // if we have to access loaded chunks.
         var intersectedBB = StructureBoundingBoxUtils.intersection(loadedBB, this.boundingBox);
-        if (settings.getPos().getY() == Integer.MIN_VALUE || !settings.isCraterLakeSet()) {
+        if (settings.getPos().getY() == MeteorConstants.UNSET_HEIGHT || !settings.isCraterLakeSet()) {
             finalizeProperties(world, intersectedBB);
         }
         boolean shouldUpdate;
@@ -117,7 +117,7 @@ public class MeteoriteStructurePiece extends StructureComponent {
                 (int) (settings.getMeteoriteRadius() * 2));
 
         IHeightAccessor accessor;
-        if (settings.getPos().getY() == Integer.MIN_VALUE) {
+        if (settings.getPos().getY() == MeteorConstants.UNSET_HEIGHT) {
             accessor = HeightMapAccessors.get(world, intersectedBB, centerBB);
             updateHeight(world, accessor.getAffectedArea(), accessor);
         }

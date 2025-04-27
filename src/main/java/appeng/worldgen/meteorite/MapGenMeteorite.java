@@ -126,7 +126,7 @@ public class MapGenMeteorite extends MapGenStructure {
             final int centerX = (chunkX << 4) + rng.nextInt(16);
             final int centerZ = (chunkZ << 4) + rng.nextInt(16);
             // 1.12 doesn't have access to heightmaps during generation, set the elevation later.
-            final BlockPos centerPos = new BlockPos(centerX, Integer.MIN_VALUE, centerZ);
+            final BlockPos centerPos = new BlockPos(centerX, MeteorConstants.UNSET_HEIGHT, centerZ);
 
             // Get the biome without loading the chunk
             var spawnBiome = worldIn.getBiomeProvider().getBiome(centerPos);
