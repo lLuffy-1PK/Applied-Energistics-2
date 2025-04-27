@@ -159,7 +159,7 @@ public final class ServerCompassService {
         var chunk = world.getChunk(pos);
         var chunkPos = chunk.getPos();
 
-        if (!updateArea(world, chunkPos)) {
+        if (!updateArea(world, chunkPos, false)) {
             // Invalidate server-side cache (clients will have to wait for a refresh)
             CLOSEST_METEORITE_CACHE.invalidate(new Query(world, chunkPos));
         }
@@ -168,16 +168,20 @@ public final class ServerCompassService {
     /**
      * Scans a full chunk for the compass target, updating the corresponding CompassRegion.
      *
+     * @param world the world
+     * @param chunkPos the position of the chunk to scan
+     * @param checkNatural if the chest's natural property should be checked
      * @return true if the compass target is in this chunk, false otherwise
      */
-    public static boolean updateArea(WorldServer world, ChunkPos chunkPos) {
+    public static boolean updateArea(WorldServer world, ChunkPos chunkPos, boolean checkNatural) {
         var compassRegion = CompassRegion.get(world, chunkPos);
         var chunk = world.getChunk(chunkPos.x, chunkPos.z);
         ExtendedBlockStorage[] sections = chunk.getBlockStorageArray();
 
         var foundTarget = false;
+        int i = 0;
         for (ExtendedBlockStorage section : sections) {
-            if (scanArea(section)) {
+            if (scanArea(section, checkNatural)) {
                 foundTarget = true;
                 break;
             }
@@ -186,15 +190,21 @@ public final class ServerCompassService {
         return foundTarget;
     }
 
+    public static boolean updateArea(WorldServer world, ChunkPos chunkPos) {
+        return updateArea(world, chunkPos, true);
+    }
+
     /**
      * Scans a chunk's Section for the compass target. Does NOT update any CompassRegion.
      * <p>
      * Used in {@link ServerCompassService#updateArea(WorldServer, ChunkPos)} instead of
      * {@link Chunk#getBlockState(int, int, int)} to check non-null, empty sections.
      *
+     * @param section the chunk's section
+     * @param checkNatural if the chest's natural property should be checked
      * @return true if the compass target is in this section, false otherwise
      */
-    private static boolean scanArea(@Nullable ExtendedBlockStorage section) {
+    private static boolean scanArea(@Nullable ExtendedBlockStorage section, boolean checkNatural) {
         // Also check for empty sections
         if (section == Chunk.NULL_BLOCK_STORAGE || section.isEmpty()) {
             return false;
@@ -210,8 +220,8 @@ public final class ServerCompassService {
                     for (int z = 0; z < CHUNK_SIZE; z++) {
                         var state = section.get(x, y, z);
                         if (state.getBlock() == skyStoneChest
-                                && state.getPropertyKeys().contains(BlockSkyChest.NATURAL)
-                                && state.getValue(BlockSkyChest.NATURAL)) {
+                                && (!checkNatural || (state.getPropertyKeys().contains(BlockSkyChest.NATURAL)
+                                        && state.getValue(BlockSkyChest.NATURAL)))) {
                             foundTarget = true;
                             break scan;
                         }

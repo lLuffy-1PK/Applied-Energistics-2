@@ -56,7 +56,8 @@ public final class CompassDataConverter implements IOnWorldStartable, IOnWorldSt
             for (ChunkPos pos : region.getBeacons()) {
                 // Runs the update once the world is fully loaded
                 TickHandler.INSTANCE.addCallable(world, w -> {
-                    ServerCompassService.updateArea((WorldServer) w, pos);
+                    // The chest might have existed before the NATURAL property, don't check it.
+                    ServerCompassService.updateArea((WorldServer) w, pos, false);
                     return null;
                 });
             }

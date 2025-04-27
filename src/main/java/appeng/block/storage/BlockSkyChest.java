@@ -111,9 +111,7 @@ public class BlockSkyChest extends AEBaseTileBlock implements ICustomCollision {
         Optional<Block> maybeBlock = AEApi.instance().definitions().blocks().skyStoneChest().maybeBlock();
         if (maybeBlock.isPresent()) {
             Block skyStoneChest = maybeBlock.get();
-            if (state.getBlock() == skyStoneChest
-                    && state.getPropertyKeys().contains(BlockSkyChest.NATURAL)
-                    && state.getValue(BlockSkyChest.NATURAL)) {
+            if (state.getBlock() == skyStoneChest) {
                 ServerCompassService.notifyBlockChange((WorldServer) world, pos);
             }
         }
