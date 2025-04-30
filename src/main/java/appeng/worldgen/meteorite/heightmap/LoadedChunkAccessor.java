@@ -7,7 +7,6 @@ import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 
-import java.util.Arrays;
 import java.util.EnumMap;
 
 /**
@@ -23,7 +22,7 @@ public class LoadedChunkAccessor extends BaseChunkAccessor {
     @Override
     protected EnumMap<HeightMapType, int[]> generateHeightMap(ChunkPos chunkPos) {
         var heightMap = world.getChunk(chunkPos.x, chunkPos.z).heightMap;
-        var oceanFloorHeightMap = Arrays.copyOf(heightMap, heightMap.length);
+        int[] oceanFloorHeightMap = new int[heightMap.length];
         int seaLevel = world.getSeaLevel();
 
         // Find ocean floor.

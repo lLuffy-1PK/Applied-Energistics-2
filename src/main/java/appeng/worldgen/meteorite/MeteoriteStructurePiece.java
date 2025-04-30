@@ -13,6 +13,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockPos.MutableBlockPos;
 import net.minecraft.util.math.ChunkPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.structure.StructureBoundingBox;
 import net.minecraft.world.gen.structure.StructureComponent;
@@ -47,23 +48,33 @@ public class MeteoriteStructurePiece extends StructureComponent {
             FalloutMode fallout) {
         super(NEW_GEN_PIECE);
         this.settings = new PlacedMeteoriteSettings(seed, center, radius, craterType, pureCrater, craterLake, fallout);
-        this.boundingBox = createBoundingBox(center);
+        this.boundingBox = createBoundingBox(center, settings.shouldPlaceCrater(), radius);
     }
 
     public MeteoriteStructurePiece(PlacedMeteoriteSettings settings) {
         super(OLD_GEN_PIECE);
         this.settings = settings;
-        this.boundingBox = createBoundingBox(settings.getPos());
+        this.boundingBox = createBoundingBox(settings.getPos(),
+                settings.shouldPlaceCrater(), settings.getMeteoriteRadius());
     }
 
-    private static StructureBoundingBox createBoundingBox(BlockPos origin) {
-        // Assume a normal max height of 128 blocks for most biomes,
-        // meteors spawned at about y64 are 9x9 chunks large at most.
-        int range = 4 * 16;
-        ChunkPos chunkPos = new ChunkPos(origin);
-        return new StructureBoundingBox(
-                chunkPos.getXStart() - range, origin.getY(), chunkPos.getZStart() - range,
-                chunkPos.getXEnd() + range, Integer.MAX_VALUE, chunkPos.getZEnd() + range);
+    private static StructureBoundingBox createBoundingBox(BlockPos origin, boolean hasCrater, float radius) {
+        int range;
+        if (hasCrater) {
+            // Assume a normal max height of 128 blocks for most biomes,
+            // meteors spawned at about y64 are 9x9 chunks large at most.
+            range = 4 * 16;
+            ChunkPos chunkPos = new ChunkPos(origin);
+            return new StructureBoundingBox(
+                    chunkPos.getXStart() - range, origin.getY(), chunkPos.getZStart() - range,
+                    chunkPos.getXEnd() + range, Integer.MAX_VALUE, chunkPos.getZEnd() + range);
+        } else {
+            // Meteors without craters don't need any extra space.
+            range = MathHelper.ceil(radius);
+            return new StructureBoundingBox(
+                    origin.getX() - range, origin.getY(), origin.getZ() - range,
+                    origin.getX() + range, Integer.MAX_VALUE, origin.getZ() + range);
+        }
     }
 
     public PlacedMeteoriteSettings getSettings() {
