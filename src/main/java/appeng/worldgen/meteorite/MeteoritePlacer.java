@@ -28,12 +28,17 @@ import appeng.loot.ChestLoot;
 import appeng.services.compass.ServerCompassService;
 import appeng.util.InventoryAdaptor;
 import appeng.util.Platform;
+import appeng.util.StructureBoundingBoxUtils;
 import appeng.util.StructureBoundingBoxUtils.BoundingBoxClamper;
 import appeng.worldgen.meteorite.fallout.*;
 import appeng.worldgen.meteorite.settings.CraterType;
 import appeng.worldgen.meteorite.settings.PlacedMeteoriteSettings;
+import com.google.common.collect.ImmutableSet;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import it.unimi.dsi.fastutil.longs.LongSet;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
+import net.minecraft.block.material.MaterialLiquid;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.init.Blocks;
 import net.minecraft.tileentity.TileEntity;
@@ -47,7 +52,7 @@ import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.gen.structure.StructureBoundingBox;
 
-import java.util.Random;
+import java.util.*;
 
 import static appeng.worldgen.meteorite.MeteorConstants.MAX_METEOR_RADIUS;
 
@@ -74,12 +79,13 @@ public final class MeteoritePlacer {
     private final double meteoriteSize;
     private final double squaredMeteoriteSize;
     private final double squaredCraterSize;
+    private final double meteoriteMaxY;
     private final boolean placeCrater;
     private final CraterType craterType;
     private final boolean pureCrater;
     private final boolean craterLake;
     private final Fallout type;
-    // Below fields are only relevant for old meteor settings
+    // doDecay is only relevant for old meteor settings
     private final boolean doDecay;
 
     public MeteoritePlacer(World world, PlacedMeteoriteSettings settings,
@@ -104,6 +110,8 @@ public final class MeteoritePlacer {
 
         double craterSize = this.meteoriteSize * 2 + CRATER_RADIUS;
         this.squaredCraterSize = craterSize * craterSize;
+
+        this.meteoriteMaxY = meteoriteSize / Math.sqrt(METEOR_UPPER_CURVATURE);
 
         var localCenter = new BlockPos(
                 boundingBox.minX + boundingBox.getXSize() / 2,
@@ -136,34 +144,52 @@ public final class MeteoritePlacer {
 
     /**
      * Place crater blocks for this bounding box.
+     * This may scan over a block multiple times because we want to remove spillover decoration.
      * Crater carving equation:
      * y = (y_0 - meteoriteSize + 1 + falloutAdjustment) + CRATER_CURVATURE_FACTOR * ((x - x_0)^2 + (z - z_0)^2)
      */
     private void placeCrater() {
+        final int seaLevel = world.getSeaLevel();
         final int maxY = 255;
         var pos = new MutableBlockPos();
         var filler = craterType.getFiller().getDefaultState();
 
-        for (int j = y - CRATER_RADIUS; j <= maxY; j++) {
-            pos.setY(j);
+        final var boundingBoxes = splitPerChunk(boundingBox);
 
-            for (int i = boundingBox.minX; i <= boundingBox.maxX; i++) {
-                pos.setPos(i, pos.getY(), pos.getZ());
+        // Possibly expands bounding boxes, so we can remove spillover decoration.
+        for (var chunkBB : boundingBoxes) {
+            for (int j = y - CRATER_RADIUS; j <= maxY; j++) {
+                pos.setY(j);
 
-                for (int k = boundingBox.minZ; k <= boundingBox.maxZ; k++) {
-                    pos.setPos(pos.getX(), pos.getY(), k);
-                    final double dx = i - x;
-                    final double dz = k - z;
-                    final double h = y - this.meteoriteSize + 1 + this.type.adjustCrater();
+                for (int i = chunkBB.minX; i <= chunkBB.maxX; i++) {
+                    pos.setPos(i, pos.getY(), pos.getZ());
 
-                    final double distanceFrom = dx * dx + dz * dz;
+                    for (int k = chunkBB.minZ; k <= chunkBB.maxZ; k++) {
+                        pos.setPos(pos.getX(), pos.getY(), k);
+                        final double dx = i - x;
+                        final double dz = k - z;
+                        final double h = y - this.meteoriteSize + 1 + this.type.adjustCrater();
 
-                    if (j > h + CRATER_CURVATURE * distanceFrom) {
-                        var currBlock = world.getBlockState(pos);
-                        if (craterType != CraterType.NORMAL && j < y && currBlock.getMaterial().isSolid()) {
-                            this.putter.put(world, pos, filler);
-                        } else {
-                            this.putter.put(world, pos, Platform.AIR_BLOCK);
+                        final double distanceFrom = dx * dx + dz * dz;
+
+                        if (j > h + CRATER_CURVATURE * distanceFrom) {
+                            var currBlock = world.getBlockState(pos);
+                            var material = currBlock.getMaterial();
+                            // If the chunkBB was expanded, this is not the first time the pos was scanned.
+                            boolean firstScan = boundingBox.isVecInside(pos);
+                            if (firstScan) {
+                                if (craterType != CraterType.NORMAL && j < y && material.isSolid()) {
+                                    this.putter.put(world, pos, filler);
+                                } else {
+                                    this.putter.put(world, pos, Platform.AIR_BLOCK);
+                                }
+                            } else {
+                                // For rescanned blocks, remove any decoration blocks above the meteor.
+                                if (j > y + meteoriteMaxY && j >= seaLevel
+                                        && isDecorationMaterial(material)) {
+                                    this.putter.put(world, pos, Platform.AIR_BLOCK);
+                                }
+                            }
                         }
                     }
                 }
@@ -176,6 +202,68 @@ public final class MeteoritePlacer {
                                 clamper.maxX(x + 30), y + 30, clamper.maxZ(z + 30)))) {
             e.setDead();
         }
+    }
+
+    /**
+     * Possibly splits the original bounding box into boxes per chunk. If all of a chunk's neighboring chunks on the
+     * negative axes are populated, the bounding box will be split and expanded as necessary.
+     *
+     * @param fullBB the original bounding box
+     * @return a list of bounding boxes per chunk containing the fullBB, otherwise the fullBB
+     */
+    private Collection<StructureBoundingBox> splitPerChunk(StructureBoundingBox fullBB) {
+        ArrayList<StructureBoundingBox> result = new ArrayList<>();
+        int minChunkX = fullBB.minX >> 4;
+        int maxChunkX = fullBB.maxX >> 4;
+        int minChunkZ = fullBB.minZ >> 4;
+        int maxChunkZ = fullBB.maxZ >> 4;
+
+        LongSet populatedChunks = new LongOpenHashSet(8);
+        // Check all -x, -z, -x/-z neighbors
+        for (int cx = minChunkX - 1; cx <= maxChunkX; cx++) {
+            for (int cz = minChunkZ - 1; cz <= maxChunkZ; cz++) {
+                // Skip top-right chunk neighbor check
+                if (cx == maxChunkX && cz == maxChunkZ) continue;
+
+                Chunk chunk = world.getChunkProvider().getLoadedChunk(cx, cz);
+                if (chunk != null && chunk.isTerrainPopulated()) {
+                    populatedChunks.add(ChunkPos.asLong(cx, cz));
+                }
+            }
+        }
+
+        boolean expanded = false;
+        for (int cx = minChunkX; cx <= maxChunkX; cx++) {
+            for (int cz = minChunkZ; cz <= maxChunkZ; cz++) {
+                // Expand to whole chunk
+                StructureBoundingBox chunkBB = new StructureBoundingBox(
+                        cx << 4, cz << 4,
+                        (cx << 4) + 15, (cz << 4) + 15);
+
+                long west = ChunkPos.asLong(cx - 1, cz);
+                long south = ChunkPos.asLong(cx, cz - 1);
+                long southWest = ChunkPos.asLong(cx - 1, cz - 1);
+                if (!(populatedChunks.contains(west)
+                        && populatedChunks.contains(south)
+                        && populatedChunks.contains(southWest))) {
+                    // Shrink back to the original bounding box, no need to scan the whole chunk.
+                    chunkBB = StructureBoundingBoxUtils.intersection(chunkBB, fullBB);
+                } else {
+                    expanded = true;
+                }
+                result.add(chunkBB);
+            }
+        }
+
+        if (expanded) {
+            return result;
+        } else {
+            return Collections.singletonList(fullBB);
+        }
+    }
+
+    private boolean isDecorationMaterial(Material material) {
+        return material == Material.LEAVES || material == Material.WOOD || material instanceof MaterialLiquid;
     }
 
     private void placeMeteorite() {

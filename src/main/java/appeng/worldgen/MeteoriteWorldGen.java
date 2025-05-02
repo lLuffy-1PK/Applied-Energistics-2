@@ -28,6 +28,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraft.world.gen.IChunkGenerator;
 import net.minecraft.world.gen.structure.MapGenStructureIO;
 import net.minecraftforge.event.terraingen.InitMapGenEvent;
@@ -35,23 +36,23 @@ import net.minecraftforge.event.terraingen.PopulateChunkEvent;
 import net.minecraftforge.event.world.ChunkDataEvent;
 import net.minecraftforge.event.world.ChunkEvent;
 import net.minecraftforge.event.world.WorldEvent;
+import net.minecraftforge.fml.common.IWorldGenerator;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
+import java.util.Random;
 
-public final class MeteoriteWorldGen {
+
+public final class MeteoriteWorldGen implements IWorldGenerator {
     private final Int2ObjectMap<MapGenMeteorite> meteoriteGenerators = new Int2ObjectOpenHashMap<>();
 
     /**
-     * This is where we actually generate the meteor, right before population.
-     *
-     * @see IChunkGenerator#populate(int, int) hook call location
+     * This is where we actually generate the meteor.
      */
-    @SubscribeEvent
-    public void beforeChunkPopulation(PopulateChunkEvent.Pre event) {
-        var world = event.getWorld();
-        var chunkPos = new ChunkPos(event.getChunkX(), event.getChunkZ());
+    @Override
+    public void generate(Random random, int chunkX, int chunkZ, World world, IChunkGenerator chunkGenerator, IChunkProvider chunkProvider) {
+        var chunkPos = new ChunkPos(chunkX, chunkZ);
         if (WorldGenRegistry.INSTANCE.isWorldGenEnabled(WorldGenType.METEORITES, world)) {
-            getGenerator(world).generateStructure(world, event.getRand(), chunkPos);
+            getGenerator(world).generateStructure(world, world.rand, chunkPos);
         }
     }
 
