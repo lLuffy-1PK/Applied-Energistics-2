@@ -34,12 +34,11 @@ public class MeteoriteBlockPutter {
         this.update = update;
     }
 
-    public boolean put(final World w, final BlockPos pos, final Block blk) {
-        var originalState = w.getBlockState(pos);
+    public void put(final World w, final BlockPos pos, final Block blk, final IBlockState originalState) {
         Block original = originalState.getBlock();
 
         if (isUnbreakable(w, pos, originalState) || original == blk) {
-            return false;
+            return;
         }
         var flags = BlockFlags.DEFAULT | BlockFlags.NO_OBSERVERS;
         if (!update) {
@@ -47,11 +46,15 @@ public class MeteoriteBlockPutter {
         }
 
         w.setBlockState(pos, blk.getDefaultState(), flags);
-        return true;
     }
 
-    public void put(final World w, final BlockPos pos, final IBlockState state) {
-        if (isUnbreakable(w, pos, w.getBlockState(pos))) {
+    public void put(final World w, final BlockPos pos, final Block blk) {
+        var originalState = w.getBlockState(pos);
+        put(w, pos, blk, originalState);
+    }
+
+    public void put(final World w, final BlockPos pos, final IBlockState state, final IBlockState originalState) {
+        if (isUnbreakable(w, pos, originalState)) {
             return;
         }
         var flags = BlockFlags.DEFAULT | BlockFlags.NO_OBSERVERS;
@@ -60,6 +63,11 @@ public class MeteoriteBlockPutter {
         }
 
         w.setBlockState(pos, state, flags);
+    }
+
+    public void put(final World w, final BlockPos pos, final IBlockState state) {
+        var originalState = w.getBlockState(pos);
+        put(w, pos, state, originalState);
     }
 
     private boolean isUnbreakable(final World w, final BlockPos pos, final IBlockState state) {

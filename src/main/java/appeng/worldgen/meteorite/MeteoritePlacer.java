@@ -158,6 +158,7 @@ public final class MeteoritePlacer {
 
         // Possibly expands bounding boxes, so we can remove spillover decoration.
         for (var chunkBB : boundingBoxes) {
+            var chunk = world.getChunk(chunkBB.minX >> 4, chunkBB.minZ >> 4);
             for (int j = y - CRATER_RADIUS; j <= maxY; j++) {
                 pos.setY(j);
 
@@ -173,21 +174,21 @@ public final class MeteoritePlacer {
                         final double distanceFrom = dx * dx + dz * dz;
 
                         if (j > h + CRATER_CURVATURE * distanceFrom) {
-                            var currBlock = world.getBlockState(pos);
-                            var material = currBlock.getMaterial();
+                            var currentState = chunk.getBlockState(pos);
+                            var material = currentState.getMaterial();
                             // If the chunkBB was expanded, this is not the first time the pos was scanned.
                             boolean firstScan = boundingBox.isVecInside(pos);
                             if (firstScan) {
                                 if (craterType != CraterType.NORMAL && j < y && material.isSolid()) {
-                                    this.putter.put(world, pos, filler);
+                                    this.putter.put(world, pos, filler, currentState);
                                 } else {
-                                    this.putter.put(world, pos, Platform.AIR_BLOCK);
+                                    this.putter.put(world, pos, Platform.AIR_BLOCK, currentState);
                                 }
                             } else {
                                 // For rescanned blocks, remove any decoration blocks above the meteor.
                                 if (j > y + meteoriteMaxY && j >= seaLevel
                                         && isDecorationMaterial(material)) {
-                                    this.putter.put(world, pos, Platform.AIR_BLOCK);
+                                    this.putter.put(world, pos, Platform.AIR_BLOCK, currentState);
                                 }
                             }
                         }
@@ -205,11 +206,11 @@ public final class MeteoritePlacer {
     }
 
     /**
-     * Possibly splits the original bounding box into boxes per chunk. If all of a chunk's neighboring chunks on the
-     * negative axes are populated, the bounding box will be split and expanded as necessary.
+     * Splits the original bounding box into boxes per chunk. If all of a chunk's neighboring chunks on the
+     * negative axes are populated, the bounding box will be expanded to the whole chunk for rescanning.
      *
      * @param fullBB the original bounding box
-     * @return a list of bounding boxes per chunk containing the fullBB, otherwise the fullBB
+     * @return a list of bounding boxes per chunk containing the fullBB
      */
     private Collection<StructureBoundingBox> splitPerChunk(StructureBoundingBox fullBB) {
         ArrayList<StructureBoundingBox> result = new ArrayList<>();
@@ -232,7 +233,6 @@ public final class MeteoritePlacer {
             }
         }
 
-        boolean expanded = false;
         for (int cx = minChunkX; cx <= maxChunkX; cx++) {
             for (int cz = minChunkZ; cz <= maxChunkZ; cz++) {
                 // Expand to whole chunk
@@ -248,18 +248,12 @@ public final class MeteoritePlacer {
                         && populatedChunks.contains(southWest))) {
                     // Shrink back to the original bounding box, no need to scan the whole chunk.
                     chunkBB = StructureBoundingBoxUtils.intersection(chunkBB, fullBB);
-                } else {
-                    expanded = true;
                 }
                 result.add(chunkBB);
             }
         }
 
-        if (expanded) {
-            return result;
-        } else {
-            return Collections.singletonList(fullBB);
-        }
+        return result;
     }
 
     private boolean isDecorationMaterial(Material material) {
@@ -351,27 +345,28 @@ public final class MeteoritePlacer {
                 pos.setPos(pos.getX(), pos.getY(), k);
                 posUp.setPos(posUp.getX(), posUp.getY(), k);
                 posDown.setPos(posDown.getX(), posDown.getY(), k);
+                var chunk = world.getChunk(pos);
                 for (int j = y - MAX_METEOR_RADIUS + 1; j < y + 30; j++) {
                     pos.setY(j);
                     posUp.setY(j + 1);
                     posDown.setY(j - 1);
-                    var state = world.getBlockState(pos);
+                    var currentState = chunk.getBlockState(pos);
 
-                    if (this.pureCrater && state.getBlock() == craterType.getFiller()) {
+                    if (this.pureCrater && currentState.getBlock() == craterType.getFiller()) {
                         continue;
                     }
 
-                    final var upperBlockState = world.getBlockState(posUp);
-                    if (state.getMaterial().isReplaceable()) {
+                    final var upperBlockState = chunk.getBlockState(posUp);
+                    if (currentState.getMaterial().isReplaceable()) {
                         if (upperBlockState.getMaterial() != Material.AIR) {
-                            this.putter.put(world, pos, upperBlockState);
+                            this.putter.put(world, pos, upperBlockState, currentState);
                         } else if (randomShit < 100 * this.squaredCraterSize) {
                             final double dx = i - x;
                             final double dy = j - y;
                             final double dz = k - z;
                             final double dist = dx * dx + dy * dy + dz * dz;
 
-                            final var lowerBlockState = world.getBlockState(posDown);
+                            final var lowerBlockState = chunk.getBlockState(posDown);
                             if (!lowerBlockState.getMaterial().isReplaceable()) {
                                 final double extraRange = randomForGen.nextDouble() * 0.6;
                                 final double height = this.squaredCraterSize * (extraRange + 0.2)
@@ -425,9 +420,9 @@ public final class MeteoritePlacer {
                     final double distanceFrom = dx * dx + dz * dz;
 
                     if (currentY > h + distanceFrom * 0.02) {
-                        var currentBlock = currentChunk.getBlockState(pos);
-                        if (currentBlock.getMaterial() == Material.AIR) {
-                            this.putter.put(world, pos, Blocks.WATER);
+                        var currentState = currentChunk.getBlockState(pos);
+                        if (currentState.getMaterial() == Material.AIR) {
+                            this.putter.put(world, pos, Blocks.WATER, currentState);
 
                             if (currentY == maxY) {
                                 world.scheduleUpdate(pos, Blocks.WATER, 0);
@@ -458,7 +453,7 @@ public final class MeteoritePlacer {
                 || (!currentState.getMaterial().isLiquid()
                     && currentState.getMaterial().isReplaceable())) {
             if (craterType == CraterType.LAVA && randomForGen.nextFloat() < 0.075f) {
-                this.putter.put(world, enclosingBlockPos, Blocks.MAGMA);
+                this.putter.put(world, enclosingBlockPos, Blocks.MAGMA, currentState);
             } else {
                 this.type.getRandomFall(world, enclosingBlockPos);
             }
