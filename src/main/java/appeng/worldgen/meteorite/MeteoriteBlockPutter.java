@@ -28,24 +28,25 @@ import net.minecraftforge.common.util.Constants.BlockFlags;
 
 
 public class MeteoriteBlockPutter {
-    private final boolean update;
+    private boolean update;
 
     public MeteoriteBlockPutter(boolean update) {
         this.update = update;
     }
 
+    public void putSilent(final World w, final BlockPos pos, final Block blk, final IBlockState originalState) {
+        var oldUpdate = update;
+        update = false;
+        put(w, pos, blk, originalState);
+        update = oldUpdate;
+    }
+
     public void put(final World w, final BlockPos pos, final Block blk, final IBlockState originalState) {
         Block original = originalState.getBlock();
-
-        if (isUnbreakable(w, pos, originalState) || original == blk) {
+        if (original == blk) {
             return;
         }
-        var flags = BlockFlags.DEFAULT | BlockFlags.NO_OBSERVERS;
-        if (!update) {
-            flags &= ~BlockFlags.NOTIFY_NEIGHBORS;
-        }
-
-        w.setBlockState(pos, blk.getDefaultState(), flags);
+        put(w, pos, blk.getDefaultState(), originalState);
     }
 
     public void put(final World w, final BlockPos pos, final Block blk) {
@@ -54,7 +55,7 @@ public class MeteoriteBlockPutter {
     }
 
     public void put(final World w, final BlockPos pos, final IBlockState state, final IBlockState originalState) {
-        if (isUnbreakable(w, pos, originalState)) {
+        if (isUnbreakable(w, pos, originalState) || state == originalState) {
             return;
         }
         var flags = BlockFlags.DEFAULT | BlockFlags.NO_OBSERVERS;

@@ -33,7 +33,6 @@ import appeng.util.StructureBoundingBoxUtils.BoundingBoxClamper;
 import appeng.worldgen.meteorite.fallout.*;
 import appeng.worldgen.meteorite.settings.CraterType;
 import appeng.worldgen.meteorite.settings.PlacedMeteoriteSettings;
-import com.google.common.collect.ImmutableSet;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import net.minecraft.block.Block;
@@ -52,7 +51,9 @@ import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.gen.structure.StructureBoundingBox;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Random;
 
 import static appeng.worldgen.meteorite.MeteorConstants.MAX_METEOR_RADIUS;
 
@@ -188,7 +189,9 @@ public final class MeteoritePlacer {
                                 // For rescanned blocks, remove any decoration blocks above the meteor.
                                 if (j > y + meteoriteMaxY && j >= seaLevel
                                         && isDecorationMaterial(material)) {
-                                    this.putter.put(world, pos, Platform.AIR_BLOCK, currentState);
+                                    // Neighboring chunks on positive axes aren't guaranteed to be loaded,
+                                    // so don't trigger block updates.
+                                    this.putter.putSilent(world, pos, Platform.AIR_BLOCK, currentState);
                                 }
                             }
                         }
