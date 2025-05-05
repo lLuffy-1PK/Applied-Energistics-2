@@ -37,7 +37,7 @@ import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
-import net.minecraft.block.material.MaterialLiquid;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.init.Blocks;
 import net.minecraft.tileentity.TileEntity;
@@ -80,7 +80,6 @@ public final class MeteoritePlacer {
     private final double meteoriteSize;
     private final double squaredMeteoriteSize;
     private final double squaredCraterSize;
-    private final double meteoriteMaxY;
     private final boolean placeCrater;
     private final CraterType craterType;
     private final boolean pureCrater;
@@ -111,8 +110,6 @@ public final class MeteoritePlacer {
 
         double craterSize = this.meteoriteSize * 2 + CRATER_RADIUS;
         this.squaredCraterSize = craterSize * craterSize;
-
-        this.meteoriteMaxY = meteoriteSize / Math.sqrt(METEOR_UPPER_CURVATURE);
 
         var localCenter = new BlockPos(
                 boundingBox.minX + boundingBox.getXSize() / 2,
@@ -155,9 +152,10 @@ public final class MeteoritePlacer {
         var pos = new MutableBlockPos();
         var filler = craterType.getFiller().getDefaultState();
 
-        final var boundingBoxes = splitPerChunk(boundingBox);
+        final double h = y - this.meteoriteSize + 1 + this.type.adjustCrater();
 
         // Possibly expands bounding boxes, so we can remove spillover decoration.
+        final var boundingBoxes = splitPerChunk(boundingBox);
         for (var chunkBB : boundingBoxes) {
             var chunk = world.getChunk(chunkBB.minX >> 4, chunkBB.minZ >> 4);
             for (int j = y - CRATER_RADIUS; j <= maxY; j++) {
@@ -170,25 +168,22 @@ public final class MeteoritePlacer {
                         pos.setPos(pos.getX(), pos.getY(), k);
                         final double dx = i - x;
                         final double dz = k - z;
-                        final double h = y - this.meteoriteSize + 1 + this.type.adjustCrater();
 
                         final double distanceFrom = dx * dx + dz * dz;
 
                         if (j > h + CRATER_CURVATURE * distanceFrom) {
                             var currentState = chunk.getBlockState(pos);
-                            var material = currentState.getMaterial();
                             // If the chunkBB was expanded, this is not the first time the pos was scanned.
                             boolean firstScan = boundingBox.isVecInside(pos);
                             if (firstScan) {
-                                if (craterType != CraterType.NORMAL && j < y && material.isSolid()) {
+                                if (craterType != CraterType.NORMAL && j < y && currentState.getMaterial().isSolid()) {
                                     this.putter.put(world, pos, filler, currentState);
                                 } else {
                                     this.putter.put(world, pos, Platform.AIR_BLOCK, currentState);
                                 }
                             } else {
-                                // For rescanned blocks, remove any decoration blocks above the meteor.
-                                if (j > y + meteoriteMaxY && j >= seaLevel
-                                        && isDecorationMaterial(material)) {
+                                // For rescanned blocks, remove any foliage above the meteor.
+                                if (j >= y && j >= seaLevel && isFoliage(currentState, pos)) {
                                     // Neighboring chunks on positive axes aren't guaranteed to be loaded,
                                     // so don't trigger block updates.
                                     this.putter.putSilent(world, pos, Platform.AIR_BLOCK, currentState);
@@ -259,8 +254,11 @@ public final class MeteoritePlacer {
         return result;
     }
 
-    private boolean isDecorationMaterial(Material material) {
-        return material == Material.LEAVES || material == Material.WOOD || material instanceof MaterialLiquid;
+    private boolean isFoliage(IBlockState state, BlockPos pos) {
+        Block block = state.getBlock();
+        Material material = state.getMaterial();
+        return block.isFoliage(world, pos) || block.isWood(world, pos) || block.isLeaves(state, world, pos)
+                || material == Material.LEAVES || material == Material.PLANTS || material == Material.VINE;
     }
 
     private void placeMeteorite() {
