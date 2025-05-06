@@ -25,14 +25,17 @@ import appeng.worldgen.meteorite.MapGenMeteorite;
 import appeng.worldgen.meteorite.MeteoriteStructurePiece;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ReferenceArraySet;
+import net.minecraft.entity.item.EntityItem;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraft.world.gen.IChunkGenerator;
 import net.minecraft.world.gen.structure.MapGenStructureIO;
+import net.minecraft.world.gen.structure.StructureBoundingBox;
+import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.terraingen.InitMapGenEvent;
-import net.minecraftforge.event.terraingen.PopulateChunkEvent;
 import net.minecraftforge.event.world.ChunkDataEvent;
 import net.minecraftforge.event.world.ChunkEvent;
 import net.minecraftforge.event.world.WorldEvent;
@@ -40,9 +43,11 @@ import net.minecraftforge.fml.common.IWorldGenerator;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 import java.util.Random;
+import java.util.Set;
 
 
 public final class MeteoriteWorldGen implements IWorldGenerator {
+    public final Set<StructureBoundingBox> captureDropAreas = new ReferenceArraySet<>();
     private final Int2ObjectMap<MapGenMeteorite> meteoriteGenerators = new Int2ObjectOpenHashMap<>();
 
     /**
@@ -125,5 +130,20 @@ public final class MeteoriteWorldGen implements IWorldGenerator {
         // ChunkPrimer isn't used in MapGenStructure, so should be safe to pass null.
         // noinspection DataFlowIssue
         getGenerator(world).generate(world, chunk.x, chunk.z, null);
+    }
+
+    /**
+     * Cleans up items spawned from blocks in known bounding boxes.
+     */
+    @SubscribeEvent
+    public void onItemDrop(EntityJoinWorldEvent event) {
+        if (!event.getWorld().isRemote && event.getEntity() instanceof EntityItem item) {
+            for (var area : captureDropAreas) {
+                if (area.isVecInside(item.getPosition())) {
+                    event.setCanceled(true);
+                    return;
+                }
+            }
+        }
     }
 }

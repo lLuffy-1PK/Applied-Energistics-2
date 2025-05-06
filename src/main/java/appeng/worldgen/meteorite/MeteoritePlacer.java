@@ -23,6 +23,7 @@ import appeng.api.AEApi;
 import appeng.api.definitions.IBlockDefinition;
 import appeng.block.storage.BlockSkyChest;
 import appeng.core.AEConfig;
+import appeng.core.AppEng;
 import appeng.core.features.AEFeature;
 import appeng.loot.ChestLoot;
 import appeng.services.compass.ServerCompassService;
@@ -38,11 +39,9 @@ import it.unimi.dsi.fastutil.longs.LongSet;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.item.EntityItem;
 import net.minecraft.init.Blocks;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockPos.MutableBlockPos;
 import net.minecraft.util.math.ChunkPos;
@@ -54,6 +53,7 @@ import net.minecraft.world.gen.structure.StructureBoundingBox;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Random;
+import java.util.Set;
 
 import static appeng.worldgen.meteorite.MeteorConstants.MAX_METEOR_RADIUS;
 
@@ -147,6 +147,8 @@ public final class MeteoritePlacer {
      * y = (y_0 - meteoriteSize + 1 + falloutAdjustment) + CRATER_CURVATURE_FACTOR * ((x - x_0)^2 + (z - z_0)^2)
      */
     private void placeCrater() {
+        Set<StructureBoundingBox> captureDropAreas = AppEng.instance().getMeteoriteGen().captureDropAreas;
+
         final int seaLevel = world.getSeaLevel();
         final int maxY = 255;
         var pos = new MutableBlockPos();
@@ -157,7 +159,9 @@ public final class MeteoritePlacer {
         // Possibly expands bounding boxes, so we can remove spillover decoration.
         final var boundingBoxes = splitPerChunk(boundingBox);
         for (var chunkBB : boundingBoxes) {
+            captureDropAreas.add(chunkBB);
             var chunk = world.getChunk(chunkBB.minX >> 4, chunkBB.minZ >> 4);
+
             for (int j = y - CRATER_RADIUS; j <= maxY; j++) {
                 pos.setY(j);
 
@@ -193,13 +197,8 @@ public final class MeteoritePlacer {
                     }
                 }
             }
-        }
 
-        for (final var e : world.getEntitiesWithinAABB(EntityItem.class,
-                        new AxisAlignedBB(
-                                clamper.minX(x - 30), y - CRATER_RADIUS, clamper.minZ(z - 30),
-                                clamper.maxX(x + 30), y + 30, clamper.maxZ(z + 30)))) {
-            e.setDead();
+            captureDropAreas.remove(chunkBB);
         }
     }
 
