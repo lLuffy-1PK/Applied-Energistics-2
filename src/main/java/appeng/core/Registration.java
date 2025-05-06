@@ -484,7 +484,7 @@ final class Registration {
 
         if (AEConfig.instance().isFeatureEnabled(AEFeature.METEORITE_WORLD_GEN)) {
             this.meteoriteGen = new MeteoriteWorldGen();
-            GameRegistry.registerWorldGenerator(meteoriteGen, 0);
+            GameRegistry.registerWorldGenerator(meteoriteGen, AEConfig.instance().getMeteoriteGeneratorPriority());
             meteoriteGen.registerStructure();
             MinecraftForge.EVENT_BUS.register(meteoriteGen);
             MinecraftForge.TERRAIN_GEN_BUS.register(HeightMapAccessors.class);

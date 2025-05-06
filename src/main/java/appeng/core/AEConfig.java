@@ -108,6 +108,7 @@ public final class AEConfig extends Configuration implements IConfigurableObject
     // Meteors
     private int minMeteoriteDistance = 707;
     private int[] meteoriteDimensionWhitelist = {0};
+    private int meteoriteGeneratorPriority = 0;
     // Wireless
     private double wirelessBaseCost = 8;
     private double wirelessCostMultiplier = 1;
@@ -166,6 +167,7 @@ public final class AEConfig extends Configuration implements IConfigurableObject
         this.spawnChargedChance = (float) (1.0 - this.get("worldGen", "spawnChargedChance", 1.0 - this.spawnChargedChance).getDouble(1.0 - this.spawnChargedChance));
         this.minMeteoriteDistance = this.get("worldGen", "minMeteoriteDistance", this.minMeteoriteDistance).getInt(this.minMeteoriteDistance);
         this.meteoriteDimensionWhitelist = this.get("worldGen", "meteoriteDimensionWhitelist", this.meteoriteDimensionWhitelist).getIntList();
+        this.meteoriteGeneratorPriority = this.get("worldGen", "meteoriteGeneratorPriority", this.meteoriteGeneratorPriority).getInt(this.meteoriteGeneratorPriority);
 
         this.quartzOresPerCluster = this.get("worldGen", "quartzOresPerCluster", this.quartzOresPerCluster).getInt(this.quartzOresPerCluster);
         this.quartzOresClusterAmount = this.get("worldGen", "quartzOresClusterAmount", this.quartzOresClusterAmount).getInt(this.quartzOresClusterAmount);
@@ -639,6 +641,10 @@ public final class AEConfig extends Configuration implements IConfigurableObject
 
     public int[] getMeteoriteDimensionWhitelist() {
         return this.meteoriteDimensionWhitelist;
+    }
+
+    public int getMeteoriteGeneratorPriority() {
+        return this.meteoriteGeneratorPriority;
     }
 
     public double getWirelessBaseCost() {
