@@ -179,7 +179,6 @@ public final class ServerCompassService {
         ExtendedBlockStorage[] sections = chunk.getBlockStorageArray();
 
         var foundTarget = false;
-        int i = 0;
         for (ExtendedBlockStorage section : sections) {
             if (scanArea(section, checkNatural)) {
                 foundTarget = true;

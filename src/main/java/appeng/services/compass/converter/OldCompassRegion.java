@@ -50,11 +50,11 @@ public final class OldCompassRegion implements IOldFileRegion {
 
     private IntArrayList getBeaconIndices() {
         var indices = new IntArrayList();
-            for (int i = 0; i < buffer.limit(); i++) {
-                if (buffer.get(i) != 0) {
-                    indices.add(i);
-                }
+        for (int i = 0; i < buffer.limit(); i++) {
+            if (buffer.get(i) != 0) {
+                indices.add(i);
             }
+        }
         return indices;
     }
 
@@ -64,6 +64,7 @@ public final class OldCompassRegion implements IOldFileRegion {
      * The old reader's packing formula:
      * <p>
      * (cx & 0x3FF) + (cz & 0x3FF) * 0x400
+     *
      * @param packed the packed value from {@link OldCompassRegion#buffer}
      * @return the unpacked ChunkPos
      */
@@ -79,6 +80,19 @@ public final class OldCompassRegion implements IOldFileRegion {
                 .regionToWorld(regionZ)
                 .get();
         return new ChunkPos(cx, cz);
+    }
+
+    @Override
+    public void openFile(String fileName) {
+        final File file = new File(this.worldCompassFolder, fileName);
+        if (this.isFileExistent(file)) {
+            try (var raf = new RandomAccessFile(file, "r")) {
+                final FileChannel fc = raf.getChannel();
+                this.buffer = fc.map(FileChannel.MapMode.READ_ONLY, 0, 0x400 * 0x400);// fc.size() );
+            } catch (final Throwable t) {
+                throw new CompassException(t);
+            }
+        }
     }
 
     /**
@@ -114,18 +128,4 @@ public final class OldCompassRegion implements IOldFileRegion {
             return val;
         }
     }
-
-    @Override
-    public void openFile(String fileName) {
-        final File file = new File(this.worldCompassFolder, fileName);
-        if (this.isFileExistent(file)) {
-            try (var raf = new RandomAccessFile(file, "r")){
-                final FileChannel fc = raf.getChannel();
-                this.buffer = fc.map(FileChannel.MapMode.READ_ONLY, 0, 0x400 * 0x400);// fc.size() );
-            } catch (final Throwable t) {
-                throw new CompassException(t);
-            }
-        }
-    }
-
 }

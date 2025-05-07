@@ -22,7 +22,6 @@ package appeng.hooks;
 import appeng.core.sync.network.NetworkHandler;
 import appeng.core.sync.packets.PacketCompassRequest;
 import com.github.bsideup.jabel.Desugar;
-import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
@@ -35,7 +34,7 @@ public class CompassManager {
     public static final CompassManager INSTANCE = new CompassManager();
     private static final int REFRESH_CACHE_AFTER = 30000;
     private static final int EXPIRE_CACHE_AFTER = 60000;
-    private final Long2ObjectMap<CachedResult> requests = new Long2ObjectOpenHashMap<>();
+    private final Long2ObjectOpenHashMap<CachedResult> requests = new Long2ObjectOpenHashMap<>();
 
     public void postResult(ChunkPos requestedPos, @Nullable BlockPos closestMeteorite) {
         this.requests.put(ChunkPos.asLong(requestedPos.x, requestedPos.z),
@@ -56,9 +55,9 @@ public class CompassManager {
         var now = System.currentTimeMillis();
 
         // Expire cached results
-        var it = this.requests.values().iterator();
+        var it = this.requests.long2ObjectEntrySet().fastIterator();
         while (it.hasNext()) {
-            var res = it.next();
+            var res = it.next().getValue();
             var age = now - res.received();
             if (age > EXPIRE_CACHE_AFTER) {
                 it.remove();
@@ -108,7 +107,9 @@ public class CompassManager {
         // If there was no cached result, reuse the closest existing result
         var closestDistance = Long.MAX_VALUE;
         BlockPos result = null;
-        for (var entry : this.requests.long2ObjectEntrySet()) {
+        var it = this.requests.long2ObjectEntrySet().fastIterator();
+        while (it.hasNext()) {
+            var entry = it.next();
             var closestPos = entry.getValue().closestMeteoritePos();
             if (closestPos != null) {
                 var distance = distanceSquared(chunkPos, entry.getLongKey());
