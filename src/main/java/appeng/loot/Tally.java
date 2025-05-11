@@ -12,18 +12,17 @@ import net.minecraft.world.storage.loot.conditions.LootCondition;
 import net.minecraft.world.storage.loot.functions.LootFunction;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Objects;
 import java.util.Random;
 
 /**
  * Tally loot that has been rolled in this LootContext. Used to roll unique meteorite presses.
  */
-public class TallyLoot extends LootFunction {
+public class Tally extends LootFunction {
     @NotNull
     private final String name;
     private final int contextId;
 
-    protected TallyLoot(LootCondition[] conditionsIn, @NotNull String name, int contextId) {
+    protected Tally(LootCondition[] conditionsIn, @NotNull String name, int contextId) {
         super(conditionsIn);
         this.name = name;
         this.contextId = contextId;
@@ -32,28 +31,32 @@ public class TallyLoot extends LootFunction {
     @NotNull
     @Override
     public ItemStack apply(@NotNull ItemStack stack, @NotNull Random rand, @NotNull LootContext context) {
-        ILootTallyer tallyer = TallyingLootContext.functionHasContext(context, Serializer.TALLY_LOOT_NAME);
+        ILootTallyer tallyer = TallyingLootContext.functionHasContext(context, Serializer.TALLY_NAME);
         if (tallyer != null) {
-            var registryName = Objects.requireNonNull(stack.getItem().getRegistryName());
-            String itemName = !this.name.isEmpty() ? this.name : registryName.toString();
+            var registryName = stack.getItem().getRegistryName();
+            String itemName = this.name;
+            if (itemName.isEmpty() && registryName != null) {
+                // Append metadata
+                itemName = registryName + ":" + stack.getItemDamage();
+            }
             tallyer.tally(itemName, contextId);
         }
         return stack;
     }
 
-    public static class Serializer extends LootFunction.Serializer<TallyLoot> {
-        private static final String TALLY_LOOT_NAME = "tally_loot";
+    public static class Serializer extends LootFunction.Serializer<Tally> {
+        private static final String TALLY_NAME = "tally";
         private static final String ITEM_NAME_KEY = "id";
         // Optional
         private static final String CONTEXT_ID_KEY = "context_id";
 
         public Serializer() {
-            super(new ResourceLocation(AppEng.MOD_ID, TALLY_LOOT_NAME), TallyLoot.class);
+            super(new ResourceLocation(AppEng.MOD_ID, TALLY_NAME), Tally.class);
         }
 
         @Override
         public void serialize(@NotNull JsonObject object,
-                              @NotNull TallyLoot functionClazz,
+                              @NotNull Tally functionClazz,
                               @NotNull JsonSerializationContext serializationContext) {
             String name = functionClazz.name;
             int contextId = functionClazz.contextId;
@@ -63,12 +66,12 @@ public class TallyLoot extends LootFunction {
 
         @NotNull
         @Override
-        public TallyLoot deserialize(@NotNull JsonObject object,
-                                     @NotNull JsonDeserializationContext deserializationContext,
-                                     LootCondition @NotNull [] conditionsIn) {
+        public Tally deserialize(@NotNull JsonObject object,
+                                 @NotNull JsonDeserializationContext deserializationContext,
+                                 LootCondition @NotNull [] conditionsIn) {
             String name = JsonUtils.getString(object, ITEM_NAME_KEY, "");
             int contextId = JsonUtils.getInt(object, CONTEXT_ID_KEY, 0);
-            return new TallyLoot(conditionsIn, name, contextId);
+            return new Tally(conditionsIn, name, contextId);
         }
     }
 }

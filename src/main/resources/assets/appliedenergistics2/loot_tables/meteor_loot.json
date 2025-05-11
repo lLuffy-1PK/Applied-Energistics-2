@@ -2,6 +2,15 @@
     "pools": [
         {
             "name": "presses",
+            "conditions": [
+                {
+                    "condition": "appliedenergistics2:feature_enabled",
+                    "features": [
+                        "PRESSES",
+                        "SPAWN_PRESSES_IN_METEORITES"
+                    ]
+                }
+            ],
             "rolls": {
                 "min": 1,
                 "max": 4
@@ -9,106 +18,102 @@
             "entries": [
                 {
                     "entryName": "Calculation Press",
-                    "type": "item",
-                    "name": "minecraft:air",
                     "conditions": [
                         {
-                            "condition": "appliedenergistics2:loot_can_roll",
-                            "id": "material.press.processor.calculation",
+                            "condition": "appliedenergistics2:check_tally",
+                            "id": "appliedenergistics2:material:13",
                             "max": 1
                         }
                     ],
+                    "type": "item",
+                    "name": "appliedenergistics2:material",
                     "functions": [
                         {
-                            "function": "appliedenergistics2:transform_to_maybe_item",
-                            "id": "material.press.processor.calculation"
+                            "function": "set_data",
+                            "data": 13
                         },
                         {
-                            "function": "appliedenergistics2:tally_loot",
-                            "id": "material.press.processor.calculation"
+                            "function": "appliedenergistics2:tally"
                         }
                     ]
                 },
                 {
                     "entryName": "Engineering Press",
-                    "type": "item",
-                    "name": "minecraft:air",
                     "conditions": [
                         {
-                            "condition": "appliedenergistics2:loot_can_roll",
-                            "id": "material.press.processor.engineering",
+                            "condition": "appliedenergistics2:check_tally",
+                            "id": "appliedenergistics2:material:14",
                             "max": 1
                         }
                     ],
+                    "type": "item",
+                    "name": "appliedenergistics2:material",
                     "functions": [
                         {
-                            "function": "appliedenergistics2:transform_to_maybe_item",
-                            "id": "material.press.processor.engineering"
+                            "function": "set_data",
+                            "data": 14
                         },
                         {
-                            "function": "appliedenergistics2:tally_loot",
-                            "id": "material.press.processor.engineering"
+                            "function": "appliedenergistics2:tally"
                         }
                     ]
                 },
                 {
                     "entryName": "Logic Press",
-                    "type": "item",
-                    "name": "minecraft:air",
                     "conditions": [
                         {
-                            "condition": "appliedenergistics2:loot_can_roll",
-                            "id": "material.press.processor.logic",
+                            "condition": "appliedenergistics2:check_tally",
+                            "id": "appliedenergistics2:material:15",
                             "max": 1
                         }
                     ],
+                    "type": "item",
+                    "name": "appliedenergistics2:material",
                     "functions": [
                         {
-                            "function": "appliedenergistics2:transform_to_maybe_item",
-                            "id": "material.press.processor.logic"
+                            "function": "set_data",
+                            "data": 15
                         },
                         {
-                            "function": "appliedenergistics2:tally_loot",
-                            "id": "material.press.processor.logic"
+                            "function": "appliedenergistics2:tally"
                         }
                     ]
                 },
                 {
                     "entryName": "Silicon Press",
-                    "type": "item",
-                    "name": "minecraft:air",
                     "conditions": [
                         {
-                            "condition": "appliedenergistics2:loot_can_roll",
-                            "id": "material.press.silicon",
+                            "condition": "appliedenergistics2:check_tally",
+                            "id": "appliedenergistics2:material:19",
                             "max": 1
                         }
                     ],
+                    "type": "item",
+                    "name": "appliedenergistics2:material",
                     "functions": [
                         {
-                            "function": "appliedenergistics2:transform_to_maybe_item",
-                            "id": "material.press.silicon"
+                            "function": "set_data",
+                            "data": 19
                         },
                         {
-                            "function": "appliedenergistics2:tally_loot",
-                            "id": "material.press.silicon"
+                            "function": "appliedenergistics2:tally"
                         }
                     ]
                 }
             ]
         },
         {
-            "name": "nuggets",
-            "rolls": {
-                "min": 1,
-                "max": 3
-            },
+            "name": "junk",
             "conditions": [
                 {
                     "condition": "random_chance",
                     "chance": 0.6666
                 }
             ],
+            "rolls": {
+                "min": 1,
+                "max": 3
+            },
             "entries": [
                 {
                     "entryName": "Nuggets",
@@ -116,7 +121,7 @@
                     "name": "minecraft:air",
                     "functions": [
                         {
-                            "function": "appliedenergistics2:transform_to_random_ore",
+                            "function": "appliedenergistics2:to_random_ore",
                             "ores": [
                                 "nuggetIron",
                                 "nuggetGold",
@@ -141,13 +146,15 @@
                 },
                 {
                     "entryName": "Sky Stone",
-                    "type": "item",
-                    "name": "minecraft:air",
-                    "functions": [
+                    "conditions": [
                         {
-                            "function": "appliedenergistics2:transform_to_maybe_item",
-                            "id": "sky_stone_block"
-                        },
+                            "condition": "appliedenergistics2:feature_enabled",
+                            "features": "SKY_STONE"
+                        }
+                    ],
+                    "type": "item",
+                    "name": "appliedenergistics2:sky_stone_block",
+                    "functions": [
                         {
                             "function": "set_count",
                             "count": {

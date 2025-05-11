@@ -273,9 +273,6 @@ public final class MeteoritePlacer {
     }
 
     private void placeChest(BlockPos pos) {
-        if (!AEConfig.instance().isFeatureEnabled(AEFeature.SPAWN_PRESSES_IN_METEORITES)) {
-            return;
-        }
         final var chest = AEApi.instance().definitions().blocks().skyStoneChest().maybeBlock();
         chest.ifPresent(block -> this.putter.put(world, pos,
                 block.getDefaultState().withProperty(BlockSkyChest.NATURAL, true)));

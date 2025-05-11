@@ -74,6 +74,7 @@ import appeng.worldgen.QuartzWorldGen;
 import appeng.worldgen.meteorite.MeteorConstants;
 import appeng.worldgen.meteorite.heightmap.HeightMapAccessors;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.advancements.ICriterionInstance;
 import net.minecraft.advancements.ICriterionTrigger;
@@ -204,12 +205,16 @@ final class Registration {
             MinecraftForge.EVENT_BUS.register(new ChestLoot());
         }
         // Meteor loot table
-        if (AEConfig.instance().isFeatureEnabled(AEFeature.SPAWN_PRESSES_IN_METEORITES)) {
+        // Check sky stone feature here because the loot table could error otherwise. It doesn't make much sense anyway
+        // to register meteor loot when the meteor wouldn't even generate properly.
+        if (AEConfig.instance().areFeaturesEnabled(ImmutableList.of(
+                AEFeature.METEORITE_WORLD_GEN,
+                AEFeature.SKY_STONE))) {
             LootTableList.register(new ResourceLocation(AppEng.MOD_ID,
                     MeteorConstants.METEOR_LOOT_TABLE));
-            LootConditionManager.registerCondition(new LootCanRoll.Serializer());
-            LootFunctionManager.registerFunction(new TallyLoot.Serializer());
-            LootFunctionManager.registerFunction(new ToMaybeItem.Serializer());
+            LootConditionManager.registerCondition(new CheckTally.Serializer());
+            LootConditionManager.registerCondition(new FeatureEnabled.Serializer());
+            LootFunctionManager.registerFunction(new Tally.Serializer());
             LootFunctionManager.registerFunction(new ToRandomOre.Serializer());
         }
 

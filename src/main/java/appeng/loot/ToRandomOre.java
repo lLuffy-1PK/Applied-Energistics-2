@@ -38,7 +38,7 @@ public class ToRandomOre extends LootFunction {
     }
 
     public static class Serializer extends LootFunction.Serializer<ToRandomOre> {
-        private static final String RANDOM_ORE_FUNCTION_NAME = "transform_to_random_ore";
+        private static final String RANDOM_ORE_FUNCTION_NAME = "to_random_ore";
         private static final String ORES = "ores";
 
         public Serializer() {
