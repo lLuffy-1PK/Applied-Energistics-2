@@ -39,6 +39,7 @@ import appeng.client.me.SlotME;
 import appeng.container.guisync.GuiSync;
 import appeng.container.guisync.SyncData;
 import appeng.container.implementations.ContainerInterface;
+import appeng.container.implementations.ContainerUpgradeable;
 import appeng.container.slot.*;
 import appeng.container.slot.SlotRestrictedInput.PlacableItemType;
 import appeng.core.AELog;
@@ -48,7 +49,9 @@ import appeng.core.sync.packets.PacketTargetItemStack;
 import appeng.core.sync.packets.PacketValueConfig;
 import appeng.helpers.ICustomNameObject;
 import appeng.helpers.InventoryAction;
+import appeng.items.materials.ItemMaterial;
 import appeng.me.helpers.PlayerSource;
+import appeng.parts.automation.UpgradeInventory;
 import appeng.util.InventoryAdaptor;
 import appeng.util.Platform;
 import appeng.util.inv.AdaptorItemHandler;
@@ -434,6 +437,17 @@ public abstract class AEBaseContainer extends Container {
                 for (final Slot d : selectedSlots) {
                     if (d instanceof SlotDisabled || d instanceof SlotME) {
                         continue;
+                    }
+
+                    if (ItemMaterial.instance.getType(tis) != null) {
+                        // Check now container is upgradeable or it's subclass
+                        if (ContainerUpgradeable.class.isAssignableFrom(this.getClass())) {
+                            // Check source or target
+                            if (!((d.inventory instanceof UpgradeInventory)
+                                    || (clickSlot.inventory instanceof UpgradeInventory))) {
+                                continue;
+                            }
+                        }
                     }
 
                     if (d.isItemValid(tis)) {

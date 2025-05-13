@@ -99,6 +99,7 @@ public enum AEFeature {
     STORAGE_BUS("StorageBus", Constants.CATEGORY_NETWORK_BUSES),
     FLUID_STORAGE_BUS("FluidStorageBus", Constants.CATEGORY_NETWORK_BUSES),
     PART_CONVERSION_MONITOR("PartConversionMonitor", Constants.CATEGORY_NETWORK_BUSES),
+    PART_THROUGHPUT_MONITOR("PartThroughputMonitor", Constants.CATEGORY_NETWORK_BUSES),
     TOGGLE_BUS("ToggleBus", Constants.CATEGORY_NETWORK_BUSES),
     PANELS("Panels", Constants.CATEGORY_NETWORK_BUSES),
     QUARTZ_FIBER("QuartzFiber", Constants.CATEGORY_NETWORK_BUSES),

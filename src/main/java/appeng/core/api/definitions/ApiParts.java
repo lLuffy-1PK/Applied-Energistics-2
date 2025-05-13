@@ -85,6 +85,7 @@ public final class ApiParts implements IParts {
     private final IItemDefinition terminal;
     private final IItemDefinition storageMonitor;
     private final IItemDefinition conversionMonitor;
+    private final IItemDefinition throughputMonitor;
     private final IItemDefinition fluidImportBus;
     private final IItemDefinition fluidExportBus;
     private final IItemDefinition fluidTerminal;
@@ -147,6 +148,7 @@ public final class ApiParts implements IParts {
         this.terminal = new DamagedItemDefinition("part.terminal", itemPart.createPart(PartType.TERMINAL));
         this.storageMonitor = new DamagedItemDefinition("part.monitor.storage", itemPart.createPart(PartType.STORAGE_MONITOR));
         this.conversionMonitor = new DamagedItemDefinition("part.monitor.conversion", itemPart.createPart(PartType.CONVERSION_MONITOR));
+        this.throughputMonitor = new DamagedItemDefinition("part.monitor.throughput", itemPart.createPart(PartType.THROUGHPUT_MONITOR));
         this.fluidImportBus = new DamagedItemDefinition("part.bus.import.fluid", itemPart.createPart(PartType.FLUID_IMPORT_BUS));
         this.fluidExportBus = new DamagedItemDefinition("part.bus.export.fluid", itemPart.createPart(PartType.FLUID_EXPORT_BUS));
         this.fluidTerminal = new DamagedItemDefinition("part.terminal.fluid", itemPart.createPart(PartType.FLUID_TERMINAL));
@@ -384,6 +386,11 @@ public final class ApiParts implements IParts {
     @Override
     public IItemDefinition storageMonitor() {
         return this.storageMonitor;
+    }
+
+    @Override
+    public IItemDefinition throughputMonitor() {
+        return this.throughputMonitor;
     }
 
     @Override

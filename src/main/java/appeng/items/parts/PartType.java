@@ -164,6 +164,7 @@ public enum PartType {
 
     CONVERSION_MONITOR(420, "conversion_monitor", EnumSet.of(AEFeature.PART_CONVERSION_MONITOR), EnumSet.noneOf(IntegrationType.class), PartConversionMonitor.class),
 
+    THROUGHPUT_MONITOR(421, "throughput_monitor", EnumSet.of(AEFeature.PART_THROUGHPUT_MONITOR), EnumSet.noneOf(IntegrationType.class), PartThroughputMonitor.class),
     INTERFACE(440, "interface", EnumSet.of(AEFeature.INTERFACE), EnumSet.noneOf(IntegrationType.class), PartInterface.class),
     FLUID_INTERFACE(441, "fluid_interface", EnumSet.of(AEFeature.FLUID_INTERFACE), EnumSet.noneOf(IntegrationType.class), PartFluidInterface.class),
 
