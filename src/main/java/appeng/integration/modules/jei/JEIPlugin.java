@@ -111,6 +111,7 @@ public class JEIPlugin implements IModPlugin {
             this.addDescription(registry, materials.logicProcessorPress(), GuiText.inWorldCraftingPresses.getLocal());
             this.addDescription(registry, materials.calcProcessorPress(), GuiText.inWorldCraftingPresses.getLocal());
             this.addDescription(registry, materials.engProcessorPress(), GuiText.inWorldCraftingPresses.getLocal());
+            this.addDescription(registry, materials.iridiumProcessorPress(), GuiText.inWorldCraftingPresses.getLocal());
         }
 
         if (AEConfig.instance().isFeatureEnabled(AEFeature.IN_WORLD_FLUIX)) {

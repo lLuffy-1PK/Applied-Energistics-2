@@ -37,6 +37,7 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Multimap;
 import appeng.server.tracker.PerformanceTracker;
+import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import net.minecraft.world.World;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -193,7 +194,6 @@ public class TickHandler {
 
             // tick networks.
             this.getRepo().updateNetworks();
-            PerformanceTracker.INSTANCE.startTracking();
             for (final Grid g : this.getRepo().networks) {
                 PerformanceTracker.INSTANCE.startTracking(g);
                 g.update();
@@ -253,15 +253,15 @@ public class TickHandler {
     private static class HandlerRep {
 
         private Queue<AEBaseTile> tiles = new ArrayDeque<>();
-        private Set<Grid> networks = new HashSet<>();
-        private Set<Grid> toAdd = new HashSet<>();
-        private Set<Grid> toRemove = new HashSet<>();
+        private Set<Grid> networks = new ReferenceOpenHashSet<>();
+        private Set<Grid> toAdd = new ReferenceOpenHashSet<>();
+        private Set<Grid> toRemove = new ReferenceOpenHashSet<>();
 
-        private void clear() {
+        private synchronized  void clear() {
             this.tiles = new ArrayDeque<>();
-            this.networks = new HashSet<>();
-            this.toAdd = new HashSet<>();
-            this.toRemove = new HashSet<>();
+            this.networks = new ReferenceOpenHashSet<>();
+            this.toAdd = new ReferenceOpenHashSet<>();
+            this.toRemove = new ReferenceOpenHashSet<>();
         }
 
         private synchronized void addNetwork(Grid g) {
@@ -277,6 +277,8 @@ public class TickHandler {
 
         private synchronized void updateNetworks() {
             this.networks.removeAll(this.toRemove);
+            PerformanceTracker.INSTANCE.getTrackers().keySet().removeAll(this.toRemove);
+
             this.toRemove.clear();
 
             this.networks.addAll(this.toAdd);

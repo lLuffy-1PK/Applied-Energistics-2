@@ -92,6 +92,8 @@ public class AppEngPacketHandlerBase {
 
         PACKET_CABLE_BUS_LANDING_PARTICLE(PacketCableBusLandingParticle.class),
 
+        PACKET_CONFIGURE_INTERFACE(PacketConfigureInterface.class),
+
         ;
 
 

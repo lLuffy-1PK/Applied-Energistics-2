@@ -209,7 +209,7 @@ public class AEItemStack extends AEStack<IAEItemStack> implements IAEItemStack {
     }
 
     @Override
-    public boolean isSameType(final ItemStack otherStack) {
+    public boolean isSameType(ItemStack otherStack) {
         if (otherStack.isEmpty()) {
             return false;
         }
@@ -347,12 +347,6 @@ public class AEItemStack extends AEStack<IAEItemStack> implements IAEItemStack {
         }
 
         return false;
-    }
-
-    @Override
-    @SuppressWarnings("deprecation")
-    protected void finalize() {
-        sharedStack.decrementReferenceCount();
     }
 
 }

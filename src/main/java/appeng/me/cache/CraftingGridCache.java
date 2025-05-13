@@ -48,6 +48,7 @@ import appeng.crafting.CraftingWatcher;
 import appeng.me.cluster.implementations.CraftingCPUCluster;
 import appeng.me.helpers.BaseActionSource;
 import appeng.me.helpers.GenericInterestManager;
+import appeng.server.tracker.PerformanceTracker;
 import appeng.tile.crafting.TileCraftingStorageTile;
 import appeng.tile.crafting.TileCraftingTile;
 import com.google.common.collect.*;
@@ -84,12 +85,11 @@ public class CraftingGridCache implements ICraftingGrid, ICraftingProviderHelper
     private final Object2ObjectMap<ICraftingPatternDetails, List<ICraftingMedium>> craftingMethods = new Object2ObjectOpenHashMap<>();
     private final Object2ObjectMap<IAEItemStack, ImmutableList<ICraftingPatternDetails>> craftableItems = new Object2ObjectOpenHashMap<>();
     private final Set<IAEItemStack> emitableItems = new HashSet<>();
-    private final Map<String, CraftingLinkNexus> craftingLinks = new HashMap<>();
+    private final Map<String, CraftingLinkNexus> craftingLinks = new Object2ObjectOpenHashMap<>();
     private final Multimap<IAEStack, CraftingWatcher> interests = HashMultimap.create();
     private final GenericInterestManager<CraftingWatcher> interestManager = new GenericInterestManager<>(this.interests);
     private IStorageGrid storageGrid;
     private IEnergyGrid energyGrid;
-    int i;
     private boolean updateList = false;
     private boolean updatePatterns = false;
 
@@ -107,6 +107,7 @@ public class CraftingGridCache implements ICraftingGrid, ICraftingProviderHelper
 
     @Override
     public void onUpdateTick() {
+        PerformanceTracker.INSTANCE.startSubTracking("Crafting");
         if (this.updateList) {
             this.updateList = false;
             this.updateCPUClusters();
@@ -117,16 +118,12 @@ public class CraftingGridCache implements ICraftingGrid, ICraftingProviderHelper
             this.updatePatterns = false;
         }
 
-        final Iterator<CraftingLinkNexus> craftingLinkIterator = this.craftingLinks.values().iterator();
-        while (craftingLinkIterator.hasNext()) {
-            if (craftingLinkIterator.next().isDead(this.grid, this)) {
-                craftingLinkIterator.remove();
-            }
-        }
-
-        for (final CraftingCPUCluster cpu : this.craftingCPUClusters) {
+        this.craftingLinks.entrySet().removeIf((e) -> e.getValue().isDead(this.grid, this));
+        for (CraftingCPUCluster cpu : this.craftingCPUClusters) {
             cpu.updateCraftingLogic(this.grid, this.energyGrid, this);
         }
+
+        PerformanceTracker.INSTANCE.endSubTracking();
     }
 
     @Override

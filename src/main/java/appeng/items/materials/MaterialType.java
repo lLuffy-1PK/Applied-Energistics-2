@@ -118,10 +118,14 @@ public enum MaterialType {
     FLUID_CELL16K_PART(56, "material_fluid_cell16k_part", EnumSet.of(AEFeature.STORAGE_CELLS)),
     FLUID_CELL64K_PART(57, "material_fluid_cell64k_part", EnumSet.of(AEFeature.STORAGE_CELLS)),
 
-    CARD_PATTERN_EXPANSION(58, "material_card_pattern_expansion", EnumSet.of(AEFeature.ADVANCED_CARDS)),
-    CARD_QUANTUM_LINK(59, "material_card_quantum_link", EnumSet.of(AEFeature.ADVANCED_CARDS, AEFeature.QUANTUM_LINKING_CARD)),
-    CARD_MAGNET(60, "material_card_magnet", EnumSet.of(AEFeature.BASIC_CARDS)),
-    CARD_STICKY(61, "material_card_sticky", EnumSet.of(AEFeature.BASIC_CARDS)),
+    IRIDIUM_PROCESSOR_PRINT(62, "material_iridium_processor_print", EnumSet.of(AEFeature.PRINTED_CIRCUITS)),
+    IRIDIUM_PROCESSOR(63, "material_iridium_processor", EnumSet.of(AEFeature.PROCESSORS)),
+    IRIDIUM_PROCESSOR_PRESS(64, "material_iridium_processor_press", EnumSet.of(AEFeature.PRESSES)),
+
+    CARD_PATTERN_EXPANSION(65, "material_card_pattern_expansion", EnumSet.of(AEFeature.ADVANCED_CARDS)),
+    CARD_QUANTUM_LINK(66, "material_card_quantum_link", EnumSet.of(AEFeature.ADVANCED_CARDS, AEFeature.QUANTUM_LINKING_CARD)),
+    CARD_MAGNET(67, "material_card_magnet", EnumSet.of(AEFeature.BASIC_CARDS)),
+    CARD_STICKY(68, "material_card_sticky", EnumSet.of(AEFeature.BASIC_CARDS)),
     ;
 
 

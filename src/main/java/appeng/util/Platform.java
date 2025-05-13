@@ -1503,8 +1503,6 @@ public class Platform {
     public static boolean isIC2DamageableItem(Item item) {
         return (isModLoaded("IC2") && item instanceof ICustomDamageItem);
     }
-<<<<<<< Updated upstream
-=======
 
     public static boolean isSameItem(@Nullable final ItemStack left, @Nullable final ItemStack right) {
         return left != null && right != null && left.isItemEqual(right);
@@ -1547,5 +1545,4 @@ public class Platform {
 
         return slimResult + postFix;
     }
->>>>>>> Stashed changes
 }

@@ -77,6 +77,8 @@ public class AppEngInternalOversizedInventory extends AppEngInternalInventory {
             this.previousStack = this.getStackInSlot(slot).copy();
         }
 
+        if (limitExtraction)
+            return super.extractItem(slot, amount, simulate);
         if (amount == 0)
             return ItemStack.EMPTY;
 

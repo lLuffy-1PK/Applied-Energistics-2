@@ -192,6 +192,15 @@ public class ContainerInterfaceTerminal extends AEBaseContainer {
         }
     }
 
+    public DualityInterface getById(long id) {
+        var tracker = this.byId.get(id);
+        if (tracker == null) {
+            return null;
+        }
+
+        return tracker.getDualityInterface();
+    }
+
     @Override
     public void doAction(final EntityPlayerMP player, final InventoryAction action, final int slot, final long id) {
         final InvTracker inv = this.byId.get(id);
@@ -428,8 +437,10 @@ public class ContainerInterfaceTerminal extends AEBaseContainer {
         private final BlockPos pos;
         private final int dim;
         private final int numUpgrades;
+        private final DualityInterface dualityInterface;
 
         public InvTracker(final DualityInterface dual, final IItemHandler patterns, final String unlocalizedName) {
+            this.dualityInterface = dual;
             this.server = patterns;
             this.client = new AppEngInternalInventory(null, this.server.getSlots());
             this.unlocalizedName = unlocalizedName;
@@ -437,6 +448,10 @@ public class ContainerInterfaceTerminal extends AEBaseContainer {
             this.pos = dual.getLocation().getPos();
             this.dim = dual.getLocation().getWorld().provider.getDimension();
             this.numUpgrades = dual.getInstalledUpgrades(Upgrades.PATTERN_EXPANSION);
+        }
+
+        public DualityInterface getDualityInterface() {
+            return dualityInterface;
         }
     }
 

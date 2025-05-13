@@ -26,22 +26,31 @@ import appeng.api.networking.events.MENetworkPostCacheConstruction;
 import appeng.api.util.IReadOnlyCollection;
 import appeng.core.worlddata.WorldData;
 import appeng.hooks.TickHandler;
+import appeng.tile.networking.TileController;
 import appeng.util.ReadOnlyCollection;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.concurrent.atomic.AtomicLong;
 
 
 public class Grid implements IGrid {
+    private static final AtomicLong GRID_ID = new AtomicLong(0L);
     private final NetworkEventBus eventBus = new NetworkEventBus();
     private final Map<Class<? extends IGridHost>, MachineSet> machines = new Reference2ObjectOpenHashMap<>();
     private final Map<Class<? extends IGridCache>, GridCacheWrapper> caches = new Reference2ObjectOpenHashMap<>();
+    private final long id;
     private GridNode pivot;
     private int priority; // how import is this network?
     private GridStorage myStorage;
+    private GridCacheWrapper cachedResultLast;
+    private GridCacheWrapper cachedResult;
 
     public Grid(final GridNode center) {
+        this.id = GRID_ID.incrementAndGet();
+        this.cachedResultLast = null;
+        this.cachedResult = null;
         this.pivot = center;
 
         final Map<Class<? extends IGridCache>, IGridCache> myCaches = AEApi.instance().registries().gridCache().createCacheInstance(this);
@@ -99,6 +108,11 @@ public class Grid implements IGrid {
         gridNode.setGridStorage(null);
 
         if (this.pivot == gridNode) {
+            IMachineSet controllers = this.getMachines(TileController.class);
+            if (!controllers.isEmpty()) {
+                this.pivot = (GridNode)controllers.iterator().next();
+                return;
+            }
             final Iterator<IGridNode> n = this.getNodes().iterator();
             if (n.hasNext()) {
                 this.pivot = (GridNode) n.next();
@@ -162,6 +176,10 @@ public class Grid implements IGrid {
         // track node.
         nodes.add(gridNode);
 
+        if (this.pivot != null && !(this.pivot.getMachine() instanceof TileController) && gridNode.getMachine() instanceof TileController) {
+            this.pivot = gridNode;
+        }
+
         for (final IGridCache cache : this.caches.values()) {
             final IGridHost machine = gridNode.getMachine();
             cache.addNode(gridNode, machine);
@@ -173,8 +191,16 @@ public class Grid implements IGrid {
 
     @Override
     @SuppressWarnings("unchecked")
-    public <C extends IGridCache> C getCache(final Class<? extends IGridCache> iface) {
-        return (C) this.caches.get(iface).getCache();
+    public <C extends IGridCache> C getCache(Class<? extends IGridCache> iface) {
+        if (this.cachedResult != null && this.cachedResult.typeEquals(iface)) {
+            return (C) this.cachedResult.getCache();
+        } else if (this.cachedResultLast != null && this.cachedResultLast.typeEquals(iface)) {
+            return (C) this.cachedResultLast.getCache();
+        } else {
+            this.cachedResultLast = this.cachedResult;
+            this.cachedResult = (GridCacheWrapper) this.caches.get(iface);
+            return this.cachedResult != null ? (C) this.cachedResult.getCache() : null;
+        }
     }
 
     @Override
@@ -221,6 +247,12 @@ public class Grid implements IGrid {
 
     void setPivot(final GridNode pivot) {
         this.pivot = pivot;
+        if (!(pivot.getMachine() instanceof TileController)) {
+            IMachineSet controllers = this.getMachines(TileController.class);
+            if (!controllers.isEmpty()) {
+                this.pivot = (GridNode)controllers.iterator().next();
+            }
+        }
     }
 
     public void update() {
@@ -241,5 +273,9 @@ public class Grid implements IGrid {
     public void setImportantFlag(final int i, final boolean publicHasPower) {
         final int flag = 1 << i;
         this.priority = (this.priority & ~flag) | (publicHasPower ? flag : 0);
+    }
+
+    public long getId() {
+        return this.id;
     }
 }

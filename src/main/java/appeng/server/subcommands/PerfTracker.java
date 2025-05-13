@@ -1,18 +1,22 @@
 package appeng.server.subcommands;
 
 import appeng.api.AEApi;
+import appeng.api.networking.IGrid;
 import appeng.api.networking.IGridNode;
 import appeng.api.util.DimensionalCoord;
-import appeng.me.Grid;
 import appeng.server.ISubCommand;
 import appeng.server.tracker.PerformanceTracker;
 import appeng.server.tracker.Tracker;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.text.Style;
 import net.minecraft.util.text.TextComponentString;
-import net.minecraft.util.text.TextFormatting;
+import net.minecraft.util.text.TextComponentTranslation;
+import net.minecraft.util.text.event.ClickEvent;
+import net.minecraft.util.text.event.HoverEvent;
 
+import java.util.Comparator;
 import java.util.Map;
 
 public class PerfTracker implements ISubCommand {
@@ -27,27 +31,25 @@ public class PerfTracker implements ISubCommand {
         if (args.length == 2) {
             if ("reset".equals(args[1])) {
                 PerformanceTracker.INSTANCE.resetTracker();
-                sender.sendMessage(new TextComponentString("性能跟踪器已经重置。"));
+                sender.sendMessage(new TextComponentTranslation("perftracker.reset"));
             } else {
-                sender.sendMessage(new TextComponentString(TextFormatting.RED + "用法: /ae2 PerfTracker [reset]"));
+                sender.sendMessage(new TextComponentTranslation("perftracker.usage"));
             }
             return;
         }
-        Map<Grid, Tracker> trackerMap = PerformanceTracker.INSTANCE.getTrackers();
+        Map<IGrid, Tracker> trackerMap = PerformanceTracker.INSTANCE.getTrackers();
 
-        sender.sendMessage(new TextComponentString(String.format(
-                "正在整理所有 AE 网络中 1 分钟内的数据 ...(总网络数量: %s)", trackerMap.size())
-        ));
+        sender.sendMessage(new TextComponentTranslation("perftracker.collecting", trackerMap.size()));
 
         trackerMap.values().stream()
                 .filter(t -> !t.getGrid().isEmpty())
-                .sorted((o1, o2) -> Integer.compare(o2.getTimeUsageAvg(), o1.getTimeUsageAvg()))
+                .sorted(Comparator.comparingInt(Tracker::getTimeUsageAvg).reversed())
                 .limit(10)
                 .forEach(t -> sendTrackerTimeUsage(t, sender));
     }
 
     public static void sendTrackerTimeUsage(final Tracker tracker, final ICommandSender sender) {
-        Grid grid = tracker.getGrid();
+        IGrid grid = tracker.getGrid();
 
         IGridNode pivot = grid.getPivot();
         DimensionalCoord location = pivot.getGridBlock().getLocation();
@@ -55,16 +57,20 @@ public class PerfTracker implements ISubCommand {
         EntityPlayer player = AEApi.instance().registries().players().findPlayer(playerID);
         int gridSize = grid.getNodes().size();
 
-        sender.sendMessage(new TextComponentString(String.format("网络位置（中心）：%s，网络节点数量：%s", location, gridSize)));
+        String tpCommand = String.format("/tppos %d %d %d", location.x, location.y, location.z);
+        Style style = new Style();
+        style.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, tpCommand));
+        style.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TextComponentTranslation("perftracker.network.teleport")));
+        sender.sendMessage(new TextComponentTranslation("perftracker.network", location, gridSize).setStyle(style));
 
         if (player == null) {
-            sender.sendMessage(new TextComponentString(String.format("所有者：未知 (玩家 ID: %s)", playerID)));
+            sender.sendMessage(new TextComponentTranslation("perftracker.owner.unknown", playerID));
         } else {
-            sender.sendMessage(new TextComponentString(String.format("所有者：%s (UUID: %s)", player.getDisplayNameString(), player.getUniqueID())));
+            sender.sendMessage(new TextComponentTranslation("perftracker.owner", player.getDisplayNameString(), player.getUniqueID()));
         }
 
-        sender.sendMessage(new TextComponentString(String.format("平均 Tick 时间：%sms", (float) tracker.getTimeUsageAvg() / 1000F)));
-        sender.sendMessage(new TextComponentString(String.format("最大 Tick 时间：%sms", (float) tracker.getMaxTimeUsage() / 1000F)));
+        sender.sendMessage(new TextComponentTranslation("perftracker.tick.avg", (float) tracker.getTimeUsageAvg() / 1000F));
+        sender.sendMessage(new TextComponentTranslation("perftracker.tick.max", (float) tracker.getMaxTimeUsage() / 1000F));
         sender.sendMessage(new TextComponentString(""));
     }
 

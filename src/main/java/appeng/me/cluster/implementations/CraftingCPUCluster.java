@@ -84,7 +84,7 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
     private final List<TileCraftingTile> storage = new ArrayList<>();
     private final List<TileCraftingMonitorTile> status = new ArrayList<>();
     private final Map<IMEMonitorHandlerReceiver<IAEItemStack>, Object> listeners = new Object2ObjectOpenHashMap<>();
-    private final Map<ICraftingPatternDetails, Queue<ICraftingMedium>> visitedMediums = new Object2ObjectOpenHashMap<>();
+    private final Map<ICraftingPatternDetails, Deque<ICraftingMedium>> visitedMediums = new Object2ObjectOpenHashMap<>();
     private ICraftingLink myLastLink;
     private String myName = "";
     private boolean isDestroyed = false;
@@ -618,7 +618,7 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
 
             if (!visitedMediums.containsKey(details) || visitedMediums.get(details).isEmpty()) {
                 List<ICraftingMedium> mediums = cc.getMediums(details);
-                Queue<ICraftingMedium> deque = new ArrayDeque<>(mediums.size() + 1);
+                Deque<ICraftingMedium> deque = new ArrayDeque<>(mediums.size() + 1);
                 for (ICraftingMedium medium : mediums) {
                     if (medium != null) {
                         deque.add(medium);
@@ -629,7 +629,7 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
 
             InventoryCrafting ic = null;
 
-            Queue<ICraftingMedium> craftingQueue = visitedMediums.get(details);
+            Deque<ICraftingMedium> craftingQueue = visitedMediums.get(details);
             while (!craftingQueue.isEmpty()) {
                 ICraftingMedium m = craftingQueue.poll();
 
@@ -746,6 +746,7 @@ public final class CraftingCPUCluster implements IAECluster, ICraftingCPU {
 
                 this.somethingChanged = true;
                 this.remainingOperations--;
+                craftingQueue.addFirst(m);
 
                 for (final IAEItemStack out : details.getCondensedOutputs()) {
                     this.postChange(out, this.machineSrc);

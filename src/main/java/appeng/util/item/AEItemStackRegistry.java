@@ -23,42 +23,40 @@
 
 package appeng.util.item;
 
-import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.item.ItemStack;
 
 import javax.annotation.Nonnull;
+import java.lang.ref.WeakReference;
+import java.util.WeakHashMap;
 
 public final class AEItemStackRegistry {
-
-    private static final ObjectOpenHashSet<AESharedItemStack> REGISTRY = new ObjectOpenHashSet<>();
+    private static final WeakHashMap<AESharedItemStack, WeakReference<AESharedItemStack>> REGISTRY = new WeakHashMap<>();
 
     private AEItemStackRegistry() {
     }
 
-    static synchronized AESharedItemStack getRegisteredStack(@Nonnull final ItemStack stack) {
-        if (stack.isEmpty()) {
+    static synchronized AESharedItemStack getRegisteredStack(final @Nonnull ItemStack itemStack) {
+        if (itemStack.isEmpty()) {
             throw new IllegalArgumentException("stack cannot be empty");
         }
 
-        final int stackSize = stack.getCount();
-        stack.setCount(1);
+        int oldStackSize = itemStack.getCount();
+        itemStack.setCount(1);
 
-        AESharedItemStack ret = REGISTRY.get(new AESharedItemStack(stack));
+        AESharedItemStack search = new AESharedItemStack(itemStack);
+        WeakReference<AESharedItemStack> weak = REGISTRY.get(search);
+        AESharedItemStack ret = null;
 
-        if (ret != null) {
-            stack.setCount(stackSize);
-            return ret.incrementReferenceCount();
+        if (weak != null) {
+            ret = weak.get();
         }
 
-        ret = new AESharedItemStack(stack.copy());
-        stack.setCount(stackSize);
+        if (ret == null) {
+            ret = new AESharedItemStack(itemStack.copy());
+            REGISTRY.put(ret, new WeakReference<>(ret));
+        }
+        itemStack.setCount(oldStackSize);
 
-        REGISTRY.add(ret);
-        return ret.incrementReferenceCount();
+        return ret;
     }
-
-    static synchronized void unregisterStack(@Nonnull final AESharedItemStack stack) {
-        REGISTRY.remove(stack);
-    }
-
 }

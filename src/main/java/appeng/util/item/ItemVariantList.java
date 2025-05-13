@@ -1,21 +1,3 @@
-/*
- * This file is part of Applied Energistics 2.
- * Copyright (c) 2021, TeamAppliedEnergistics, All rights reserved.
- *
- * Applied Energistics 2 is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Applied Energistics 2 is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Applied Energistics 2.  If not, see <http://www.gnu.org/licenses/lgpl>.
- */
-
 package appeng.util.item;
 
 import appeng.api.config.FuzzyMode;
@@ -25,14 +7,11 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 
-/**
- * Stores variants of a single type of {@link net.minecraft.item.Item}, i.e. versions with different durability, or
- * different NBT or capabilities.
- */
 abstract class ItemVariantList {
 
     public void add(final IAEItemStack option) {
-        final IAEItemStack st = this.getRecords().get(((AEItemStack) option).getSharedStack());
+        AESharedItemStack sharedStack = ((AEItemStack) option).getSharedStack();
+        final IAEItemStack st = this.getRecords().get(sharedStack);
 
         if (st != null) {
             st.add(option);
@@ -40,8 +19,7 @@ abstract class ItemVariantList {
         }
 
         final IAEItemStack opt = option.copy();
-
-        this.putItemRecord(opt);
+        this.putItemRecord(opt, sharedStack);
     }
 
     public IAEItemStack findPrecise(final IAEItemStack itemStack) {
@@ -49,7 +27,8 @@ abstract class ItemVariantList {
     }
 
     public void addStorage(final IAEItemStack option) {
-        final IAEItemStack st = this.getRecords().get(((AEItemStack) option).getSharedStack());
+        AESharedItemStack sharedStack = ((AEItemStack) option).getSharedStack();
+        final IAEItemStack st = this.getRecords().get(sharedStack);
 
         if (st != null) {
             st.incStackSize(option.getStackSize());
@@ -58,11 +37,12 @@ abstract class ItemVariantList {
 
         final IAEItemStack opt = option.copy();
 
-        this.putItemRecord(opt);
+        this.putItemRecord(opt, sharedStack);
     }
 
     public void addCrafting(final IAEItemStack option) {
-        final IAEItemStack st = this.getRecords().get(((AEItemStack) option).getSharedStack());
+        AESharedItemStack sharedStack = ((AEItemStack) option).getSharedStack();
+        final IAEItemStack st = this.getRecords().get(sharedStack);
 
         if (st != null) {
             st.setCraftable(true);
@@ -73,11 +53,12 @@ abstract class ItemVariantList {
         opt.setStackSize(0);
         opt.setCraftable(true);
 
-        this.putItemRecord(opt);
+        this.putItemRecord(opt, sharedStack);
     }
 
     public void addRequestable(final IAEItemStack option) {
-        final IAEItemStack st = this.getRecords().get(((AEItemStack) option).getSharedStack());
+        AESharedItemStack sharedStack = ((AEItemStack) option).getSharedStack();
+        final IAEItemStack st = this.getRecords().get(sharedStack);
 
         if (st != null) {
             st.setCountRequestable(st.getCountRequestable() + option.getCountRequestable());
@@ -89,26 +70,21 @@ abstract class ItemVariantList {
         opt.setCraftable(false);
         opt.setCountRequestable(option.getCountRequestable());
 
-        this.putItemRecord(opt);
+        this.putItemRecord(opt, sharedStack);
     }
 
     public int size() {
-        int size = 0;
-        for (IAEItemStack entry : getRecords().values()) {
-            if (entry.isMeaningful()) {
-                size++;
-            }
-        }
-
-        return size;
+        return (int) getRecords().values().stream()
+                .filter(IAEItemStack::isMeaningful)
+                .count();
     }
 
     public Iterator<IAEItemStack> iterator() {
         return new MeaningfulItemIterator<>(this.getRecords().values());
     }
 
-    private void putItemRecord(final IAEItemStack itemStack) {
-        this.getRecords().put(((AEItemStack) itemStack).getSharedStack(), itemStack);
+    private void putItemRecord(final IAEItemStack itemStack, final AESharedItemStack sharedStack) {
+        this.getRecords().put(sharedStack, itemStack);
     }
 
     abstract Map<AESharedItemStack, IAEItemStack> getRecords();

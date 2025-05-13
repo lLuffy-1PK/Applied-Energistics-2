@@ -23,9 +23,14 @@ import appeng.api.config.Actionable;
 import appeng.api.config.PowerMultiplier;
 import appeng.api.implementations.guiobjects.IPortableCell;
 import appeng.container.interfaces.IInventorySlotAware;
+import appeng.util.Platform;
 import appeng.util.inv.IAEAppEngInventory;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
+import net.minecraft.inventory.ClickType;
 import net.minecraft.item.ItemStack;
+
+import javax.annotation.Nonnull;
 
 
 public class ContainerMEPortableCell extends ContainerMEMonitorable implements IInventorySlotAware {
@@ -55,23 +60,42 @@ public class ContainerMEPortableCell extends ContainerMEMonitorable implements I
 
     @Override
     public void detectAndSendChanges() {
-        final ItemStack currentItem = this.slot < 0 ? this.getPlayerInv().getCurrentItem() : this.getPlayerInv().getStackInSlot(this.slot);
-
-        if (this.portableCell == null || currentItem.isEmpty()) {
+        if (this.portableCell == null) {
             this.setValidContainer(false);
-        } else if (!this.portableCell.getItemStack().isEmpty() && currentItem != this.portableCell.getItemStack()) {
-            if (!ItemStack.areItemsEqual(this.portableCell.getItemStack(), currentItem)) {
+        } else {
+            final ItemStack currentItem = this.slot < 0 ? this.getPlayerInv().getCurrentItem() : this.getPlayerInv().getStackInSlot(this.slot);
+
+            if (currentItem != ItemStack.EMPTY && !Platform.isSameItem(this.portableCell.getItemStack(), currentItem)) {
                 this.setValidContainer(false);
+            } else if (currentItem != this.portableCell.getItemStack()) {
+                this.getPlayerInv().setInventorySlotContents(this.getPlayerInv().currentItem, this.portableCell.getItemStack());
+            }
+
+            // drain 1 ae t
+            this.ticks++;
+            if (this.ticks > 10) {
+                this.portableCell.extractAEPower(this.getPowerMultiplier() * this.ticks, Actionable.MODULATE, PowerMultiplier.CONFIG);
+                this.ticks = 0;
             }
         }
 
-        // drain 1 ae t
-        this.ticks++;
-        if (this.ticks > 10) {
-            this.portableCell.extractAEPower(this.getPowerMultiplier() * this.ticks, Actionable.MODULATE, PowerMultiplier.CONFIG);
-            this.ticks = 0;
-        }
         super.detectAndSendChanges();
+    }
+
+    @Nonnull
+    @Override
+    public ItemStack slotClick(int slotIndex, int mouseButton, @Nonnull ClickType modifier, @Nonnull EntityPlayer player) {
+        if (modifier == ClickType.SWAP && mouseButton >= 0 && mouseButton < 9) {
+            return ItemStack.EMPTY;
+        }
+        return super.slotClick(slotIndex, mouseButton, modifier, player);
+    }
+
+    @Override
+    protected boolean mergeItemStack(@Nonnull ItemStack stack, int startIndex, int endIndex, boolean reverseDirection) {
+        ItemStack currentItem = this.slot < 0 ? this.getPlayerInv().getCurrentItem() : this.getPlayerInv().getStackInSlot(this.slot);
+
+        return !ItemStack.areItemStacksEqual(stack, currentItem);
     }
 
     private double getPowerMultiplier() {

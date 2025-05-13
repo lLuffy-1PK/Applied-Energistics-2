@@ -29,6 +29,7 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectSortedMap;
 import net.minecraft.item.ItemStack;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Map;
 
@@ -51,7 +52,7 @@ class FuzzyItemVariantList extends ItemVariantList {
 
         ItemDamageBound lowerBound = makeLowerBound(itemStack, fuzzy);
         ItemDamageBound upperBound = makeUpperBound(itemStack, fuzzy);
-        Preconditions.checkState(lowerBound.itemDamage > upperBound.itemDamage);
+        Preconditions.checkState(lowerBound.itemDamage >= upperBound.itemDamage, String.format("ItemStack %s lowerBound %s > ItemStack %s upperBound %s", itemStack, lowerBound.itemDamage, itemStack, upperBound.itemDamage));
 
         return this.records.subMap(lowerBound, upperBound).values();
     }

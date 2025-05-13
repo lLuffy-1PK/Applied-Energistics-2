@@ -187,7 +187,7 @@ public class FluidHandlerAdapter implements IMEInventory<IAEFluidStack>, IBaseMo
             this.fluidHandler = fluidHandler;
         }
 
-        public List<IAEFluidStack> update() {
+ public List<IAEFluidStack> update() {
             final List<IAEFluidStack> changes = new ArrayList<>();
             final IFluidTankProperties[] tankProperties = this.fluidHandler.getTankProperties();
 

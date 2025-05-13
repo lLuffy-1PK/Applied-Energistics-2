@@ -403,6 +403,7 @@ gui.tooltips.appliedenergistics2.ToggleShowOnlyInvalidInterface=Toggles showing 
 gui.tooltips.appliedenergistics2.ToggleShowOnlyInvalidInterfaceOffDesc=Showing all interfaces
 gui.tooltips.appliedenergistics2.ToggleShowOnlyInvalidInterfaceOnDesc=Showing only interfaces with invalid patterns
 gui.tooltips.appliedenergistics2.HighlightInterface=Highlight Interface
+gui.tooltips.appliedenergistics2.ConfigureInterface=Configure Interface
 gui.tooltips.appliedenergistics2.SearchFieldInputs=Recipe Inputs
 gui.tooltips.appliedenergistics2.SearchFieldOutputs=Recipe Outputs
 gui.tooltips.appliedenergistics2.SearchFieldNames=Interface Names
@@ -471,7 +472,7 @@ theoneprobe.appliedenergistics2.p2p_output_one_input=Linked (Output Side) - 1 In
 theoneprobe.appliedenergistics2.p2p_output_many_inputs=Linked (Output Side) - §2%d§r Inputs
 theoneprobe.appliedenergistics2.p2p_output=Linked (Output Side)
 theoneprobe.appliedenergistics2.p2p_frequency=Frequency: §5%1$s§r
-theoneprobe.appliedenergistics2.stored_energy=§2%1$d§к / §4%2$d§r
+theoneprobe.appliedenergistics2.stored_energy=§2%1$d§r / §4%2$d§r
 
 // Items
 item.appliedenergistics2.storage_cell_1k.name=§61k§r ME Storage Cell
@@ -566,8 +567,8 @@ item.appliedenergistics2.multi_part.cable_smart.name=ME Smart Cable
 item.appliedenergistics2.multi_part.cable_dense_covered.name=ME Dense Covered Cable
 item.appliedenergistics2.multi_part.cable_dense_smart.name=ME Dense Smart Cable
 item.appliedenergistics2.multi_part.storage_monitor.name=ME Storage Monitor
-item.appliedenergistics2.multi_part.conversion_monitor.name=ME Conversion Monitor
 item.appliedenergistics2.multi_part.throughput_monitor.name=ME Throughput Monitor
+item.appliedenergistics2.multi_part.conversion_monitor.name=ME Conversion Monitor
 item.appliedenergistics2.multi_part.crafting_terminal.name=ME Crafting Terminal
 item.appliedenergistics2.multi_part.semi_dark_monitor.name=Illuminated Panel
 item.appliedenergistics2.multi_part.monitor.name=Bright Illuminated Panel
@@ -712,3 +713,24 @@ key.open_wireless_crafting_terminal.desc=Open Wireless Crafting Terminal
 key.open_wireless_pattern_terminal.desc=Open Wireless Pattern Terminal
 key.open_wireless_fluid_terminal.desc=Open Wireless Fluid Terminal
 key.open_wireless_interface_terminal.desc=Open Wireless Interface Terminal
+
+# English translations for PerfTracker
+perftracker.reset=Performance tracker has been reset.
+perftracker.usage=Usage: /ae2 PerfTracker [reset]
+perftracker.collecting=Collecting data for all AE networks in the last minute... (Total networks: %s)
+perftracker.network=Network location (center): %s, number of nodes: %s
+perftracker.owner.unknown=Owner: Unknown (Player ID: %s)
+perftracker.owner=Owner: %s (UUID: %s)
+perftracker.tick.avg=Average tick time: %sms
+perftracker.tick.max=Maximum tick time: %sms
+perftracker.network.teleport=Click to teleport
+
+#Custom Items
+item.appliedenergistics2.material.iridium_processor.name=Iridium Processor
+item.appliedenergistics2.material.iridium_processor_press.name=Iridium Processor Press
+item.appliedenergistics2.material.iridium_processor_print.name=Printed Iridium Circuit
+
+#Toasts
+toast.me_system.title=ME System
+toast.me_system.banned_item=Forbidden to store
+toast.me_system.too_big_nbt=NBT is too complex

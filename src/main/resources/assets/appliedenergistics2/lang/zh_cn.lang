@@ -257,7 +257,6 @@ gui.appliedenergistics2.Nothing=无
 gui.appliedenergistics2.CraftingToastDone=合成已完成！
 gui.appliedenergistics2.CraftingToastCancelled=合成已取消！
 gui.appliedenergistics2.Sticky=粘滞
-gui.appliedenergistics2.PatternEncoder=由 %s 编码
 gui.appliedenergistics2.FluidTerminal=流体终端
 gui.appliedenergistics2.NoneLock=合成已解锁
 gui.appliedenergistics2.CraftingLock=合成已锁定
@@ -712,3 +711,14 @@ key.open_wireless_crafting_terminal.desc=打开无线合成终端
 key.open_wireless_pattern_terminal.desc=打开无线样板终端
 key.open_wireless_fluid_terminal.desc=打开无线流体终端
 key.open_wireless_interface_terminal.desc=打开无线接口终端
+
+# 中文翻译文件 для PerfTracker
+perftracker.reset=性能跟踪器已经重置。
+perftracker.usage=用法: /ae2 PerfTracker [reset]
+perftracker.collecting=正在整理所有 AE 网络中 1 分钟内的数据 ...(总网络数量: %s)
+perftracker.network=网络位置（中心）：%s，网络节点数量：%s
+perftracker.owner.unknown=所有者：未知 (玩家 ID: %s)
+perftracker.owner=所有者：%s (UUID: %s)
+perftracker.tick.avg=平均 Tick 时间：%sms
+perftracker.tick.max=最大 Tick 时间：%sms
+perftracker.network.teleport=点击传送

@@ -185,8 +185,14 @@ public class ItemEncodedPattern extends AEBaseItem implements ICraftingPatternIt
     @Override
     public ICraftingPatternDetails getPatternForItem(final ItemStack is, final World w) {
         try {
-            return new PatternHelper(is, w);
-        } catch (final Throwable t) {
+            ItemStack copied = is.copy();
+            NBTTagCompound tag = copied.getTagCompound();
+            if (tag != null) {
+                tag.removeTag("encoderName");
+            }
+
+            return new PatternHelper(copied, w);
+        } catch (Throwable var5) {
             return null;
         }
     }

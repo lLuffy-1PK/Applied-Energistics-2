@@ -65,6 +65,7 @@ import appeng.util.inv.InvOperation;
 import appeng.util.prioritylist.FuzzyPriorityList;
 import appeng.util.prioritylist.PrecisePriorityList;
 import com.jaquadro.minecraft.storagedrawers.api.capabilities.IItemRepository;
+import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -84,10 +85,7 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 
 public class PartStorageBus extends PartUpgradeable implements IGridTickable, ICellContainer, IMEMonitorHandlerReceiver<IAEItemStack>, IPriorityHost {
@@ -100,6 +98,7 @@ public class PartStorageBus extends PartUpgradeable implements IGridTickable, IC
     public static final IPartModel MODELS_HAS_CHANNEL = new PartModel(MODEL_BASE, new ResourceLocation(AppEng.MOD_ID, "part/storage_bus_has_channel"));
     @CapabilityInject(IItemRepository.class)
     public static Capability<IItemRepository> ITEM_REPOSITORY_CAPABILITY = null;
+    private static final Set<PartStorageBus> LOADED_STORAGE_BUSES = new ReferenceOpenHashSet<>();
     protected final IActionSource mySrc;
     protected final AppEngInternalAEInventory Config = new AppEngInternalAEInventory(this, 63);
     protected int priority = 0;
@@ -293,26 +292,46 @@ public class PartStorageBus extends PartUpgradeable implements IGridTickable, IC
     }
 
     @SubscribeEvent
-    public void onChunkUnLoad(final ChunkEvent.Unload event) {
+    public static void onChunkUnLoadStatic(ChunkEvent.Unload event) {
+        LOADED_STORAGE_BUSES.forEach((storageBus) -> {
+            storageBus.onChunkUnLoad(event);
+        });
+    }
+
+    private void onChunkUnLoad(ChunkEvent.Unload event) {
         TileEntity self = this.getHost().getTile();
-        ChunkPos targetChunkPos = new ChunkPos(self.getPos().offset(this.getSide().getFacing()));
-        if (targetChunkPos.equals(event.getChunk().getPos())) {
-            this.handlerHash = 0;
-            this.handler = null;
-            resetCache(true);
+        if (self.getWorld() == event.getWorld()) {
+            BlockPos selfPos = self.getPos();
+            ChunkPos selfChunkPos = new ChunkPos(selfPos);
+            ChunkPos unloadedChunkPos = event.getChunk().getPos();
+            if (!selfChunkPos.equals(unloadedChunkPos)) {
+                ChunkPos targetChunkPos = new ChunkPos(selfPos.offset(this.getSide().getFacing()));
+                if (targetChunkPos.equals(unloadedChunkPos)) {
+                    this.handlerHash = 0;
+                    this.handler = null;
+                    this.resetCache(true);
+                }
+
+            }
         }
     }
 
     @Override
     public void removeFromWorld() {
         super.removeFromWorld();
-        MinecraftForge.EVENT_BUS.unregister(this);
+        LOADED_STORAGE_BUSES.remove(this);
+        if (LOADED_STORAGE_BUSES.isEmpty()) {
+            MinecraftForge.EVENT_BUS.unregister(this);
+        }
     }
 
     @Override
     public void addToWorld() {
         super.addToWorld();
-        MinecraftForge.EVENT_BUS.register(this);
+        if (LOADED_STORAGE_BUSES.isEmpty()) {
+            MinecraftForge.EVENT_BUS.register(this);
+        }
+        LOADED_STORAGE_BUSES.add(this);
     }
 
     @Override
@@ -604,10 +623,11 @@ public class PartStorageBus extends PartUpgradeable implements IGridTickable, IC
     }
 
     // TODO: 1/28/2024 Unify both methods.
+
     /**
      * Filters the changes to only include items that pass the storage filter.
      * Optimally, this should be handled by the underlying monitor.
-     * 
+     *
      * @see appeng.fluids.parts.PartFluidStorageBus#filterChanges
      */
     protected Iterable<IAEItemStack> filterChanges(Iterable<IAEItemStack> change) {

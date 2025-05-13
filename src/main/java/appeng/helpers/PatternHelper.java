@@ -26,6 +26,7 @@ import appeng.api.storage.data.IAEItemStack;
 import appeng.container.ContainerNull;
 import appeng.util.Platform;
 import appeng.util.item.AEItemStack;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.inventory.InventoryCrafting;
 import net.minecraft.item.Item;
@@ -63,7 +64,7 @@ public class PatternHelper implements ICraftingPatternDetails, Comparable<Patter
     private final IAEItemStack[] condensedOutputs;
     private final IAEItemStack[] inputs;
     private final IAEItemStack[] outputs;
-    private final Map<Integer, List<IAEItemStack>> substituteInputs;
+    private final List<IAEItemStack>[] substituteInputs;
     private final boolean isCrafting;
     private final boolean canSubstitute;
     private final Set<TestLookup> failCache = new ObjectOpenHashSet<>();
@@ -140,7 +141,7 @@ public class PatternHelper implements ICraftingPatternDetails, Comparable<Patter
 
         this.inputs = in.toArray(new IAEItemStack[isCrafting ? CRAFTING_INPUT_LIMIT : PROCESSING_INPUT_LIMIT]);
         this.outputs = out.toArray(new IAEItemStack[outputLength]);
-        this.substituteInputs = new HashMap<>(CRAFTING_INPUT_LIMIT);
+        this.substituteInputs = new List[CRAFTING_INPUT_LIMIT];
 
         final Map<IAEItemStack, IAEItemStack> tmpOutputs = new HashMap<>();
 
@@ -288,20 +289,22 @@ public class PatternHelper implements ICraftingPatternDetails, Comparable<Patter
     public List<IAEItemStack> getSubstituteInputs(int slot) {
         if (this.inputs[slot] == null) {
             return Collections.emptyList();
-        }
+        } else if (slot >= this.substituteInputs.length) {
+            return Collections.emptyList();
+        } else if (this.substituteInputs[slot] != null) {
+            return this.substituteInputs[slot];
+        } else {
+            ItemStack[] matchingStacks = this.getRecipeIngredient(slot).getMatchingStacks();
+            IAEItemStack[] matchingAEStacks = new IAEItemStack[matchingStacks.length + 1];
+            matchingAEStacks[0] = this.inputs[slot];
 
-        return this.substituteInputs.computeIfAbsent(slot, value -> {
-            ItemStack[] matchingStacks = getRecipeIngredient(slot).getMatchingStacks();
-            List<IAEItemStack> itemList = new ArrayList<>(matchingStacks.length + 1);
-            for (ItemStack matchingStack : matchingStacks) {
-                itemList.add(AEItemStack.fromItemStack(matchingStack));
+            for(int i = 1; i < matchingStacks.length; ++i) {
+                matchingAEStacks[i] = AEItemStack.fromItemStack(matchingStacks[i]);
             }
 
-            // Ensure that the specific item put in by the user is at the beginning,
-            // so that it takes precedence over substitutions
-            itemList.add(0, this.inputs[slot]);
-            return itemList;
-        });
+            List<IAEItemStack> itemList = new ObjectArrayList<>(matchingAEStacks);
+            return this.substituteInputs[slot] = itemList;
+        }
     }
 
     /**

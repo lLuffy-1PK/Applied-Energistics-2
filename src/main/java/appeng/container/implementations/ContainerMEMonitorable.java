@@ -65,6 +65,8 @@ import net.minecraft.inventory.IContainerListener;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.items.IItemHandler;
 
 import javax.annotation.Nonnull;
@@ -428,6 +430,7 @@ public class ContainerMEMonitorable extends AEBaseContainer implements IConfigMa
         return items;
     }
 
+    @SideOnly(Side.CLIENT)
     public void postUpdate(final List<IAEItemStack> list) {
         for (final IAEItemStack is : list) {
             this.items.add(is);

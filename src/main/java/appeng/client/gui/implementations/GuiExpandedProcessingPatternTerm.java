@@ -121,45 +121,45 @@ public class GuiExpandedProcessingPatternTerm extends GuiMEMonitorable implement
     public void initGui() {
         super.initGui();
 
-        this.tabCraftButton = new GuiTabButton(this.guiLeft + 173, this.guiTop + this.ySize - 177, new ItemStack(Blocks.CRAFTING_TABLE), GuiText.CraftingPattern.getLocal(), this.itemRender);
+        this.tabCraftButton = new GuiTabButton(this.guiLeft + 176, this.guiTop + this.ySize - 177, new ItemStack(Blocks.CRAFTING_TABLE), GuiText.CraftingPattern.getLocal(), this.itemRender);
         this.buttonList.add(this.tabCraftButton);
 
-        this.tabProcessButton = new GuiTabButton(this.guiLeft + 173, this.guiTop + this.ySize - 177, new ItemStack(Blocks.FURNACE), GuiText.ProcessingPattern.getLocal(), this.itemRender);
+        this.tabProcessButton = new GuiTabButton(this.guiLeft + 176, this.guiTop + this.ySize - 177, new ItemStack(Blocks.FURNACE), GuiText.ProcessingPattern.getLocal(), this.itemRender);
         this.buttonList.add(this.tabProcessButton);
 
-        this.substitutionsEnabledBtn = new GuiImgButton(this.guiLeft + 84, this.guiTop + this.ySize - 163, Settings.ACTIONS, ItemSubstitution.ENABLED);
+        this.substitutionsEnabledBtn = new GuiImgButton(this.guiLeft + 87, this.guiTop + this.ySize - 163, Settings.ACTIONS, ItemSubstitution.ENABLED);
         this.substitutionsEnabledBtn.setHalfSize(true);
         this.buttonList.add(this.substitutionsEnabledBtn);
 
-        this.substitutionsDisabledBtn = new GuiImgButton(this.guiLeft + 84, this.guiTop + this.ySize - 163, Settings.ACTIONS, ItemSubstitution.DISABLED);
+        this.substitutionsDisabledBtn = new GuiImgButton(this.guiLeft + 87, this.guiTop + this.ySize - 163, Settings.ACTIONS, ItemSubstitution.DISABLED);
         this.substitutionsDisabledBtn.setHalfSize(true);
         this.buttonList.add(this.substitutionsDisabledBtn);
 
-        this.clearBtn = new GuiImgButton(this.guiLeft + 74, this.guiTop + this.ySize - 163, Settings.ACTIONS, ActionItems.CLOSE);
+        this.clearBtn = new GuiImgButton(this.guiLeft + 78, this.guiTop + this.ySize - 163, Settings.ACTIONS, ActionItems.CLOSE);
         this.clearBtn.setHalfSize(true);
         this.buttonList.add(this.clearBtn);
 
-        this.x3Btn = new GuiImgButton(this.guiLeft + 131, this.guiTop + this.ySize - 158, Settings.ACTIONS, ActionItems.MULTIPLY_BY_THREE);
+        this.x3Btn = new GuiImgButton(this.guiLeft + 134, this.guiTop + this.ySize - 158, Settings.ACTIONS, ActionItems.MULTIPLY_BY_THREE);
         this.x3Btn.setHalfSize(true);
         this.buttonList.add(this.x3Btn);
 
-        this.x2Btn = new GuiImgButton(this.guiLeft + 131, this.guiTop + this.ySize - 148, Settings.ACTIONS, ActionItems.MULTIPLY_BY_TWO);
+        this.x2Btn = new GuiImgButton(this.guiLeft + 134, this.guiTop + this.ySize - 148, Settings.ACTIONS, ActionItems.MULTIPLY_BY_TWO);
         this.x2Btn.setHalfSize(true);
         this.buttonList.add(this.x2Btn);
 
-        this.plusOneBtn = new GuiImgButton(this.guiLeft + 131, this.guiTop + this.ySize - 110, Settings.ACTIONS, ActionItems.INCREASE_BY_ONE);
+        this.plusOneBtn = new GuiImgButton(this.guiLeft + 134, this.guiTop + this.ySize - 110, Settings.ACTIONS, ActionItems.INCREASE_BY_ONE);
         this.plusOneBtn.setHalfSize(true);
         this.buttonList.add(this.plusOneBtn);
 
-        this.divThreeBtn = new GuiImgButton(this.guiLeft + 87, this.guiTop + this.ySize - 158, Settings.ACTIONS, ActionItems.DIVIDE_BY_THREE);
+        this.divThreeBtn = new GuiImgButton(this.guiLeft + 90, this.guiTop + this.ySize - 158, Settings.ACTIONS, ActionItems.DIVIDE_BY_THREE);
         this.divThreeBtn.setHalfSize(true);
         this.buttonList.add(this.divThreeBtn);
 
-        this.divTwoBtn = new GuiImgButton(this.guiLeft + 87, this.guiTop + this.ySize - 148, Settings.ACTIONS, ActionItems.DIVIDE_BY_TWO);
+        this.divTwoBtn = new GuiImgButton(this.guiLeft + 90, this.guiTop + this.ySize - 148, Settings.ACTIONS, ActionItems.DIVIDE_BY_TWO);
         this.divTwoBtn.setHalfSize(true);
         this.buttonList.add(this.divTwoBtn);
 
-        this.minusOneBtn = new GuiImgButton(this.guiLeft + 87, this.guiTop + this.ySize - 110, Settings.ACTIONS, ActionItems.DECREASE_BY_ONE);
+        this.minusOneBtn = new GuiImgButton(this.guiLeft + 90, this.guiTop + this.ySize - 110, Settings.ACTIONS, ActionItems.DECREASE_BY_ONE);
         this.minusOneBtn.setHalfSize(true);
         this.buttonList.add(this.minusOneBtn);
 

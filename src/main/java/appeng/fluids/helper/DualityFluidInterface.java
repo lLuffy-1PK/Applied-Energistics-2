@@ -50,13 +50,10 @@ import appeng.capabilities.Capabilities;
 import appeng.core.settings.TickRates;
 import appeng.fluids.util.AEFluidInventory;
 import appeng.fluids.util.AEFluidStack;
-import appeng.fluids.util.AENetworkFluidInventory;
 import appeng.fluids.util.IAEFluidInventory;
 import appeng.fluids.util.IAEFluidTank;
 import appeng.helpers.ICustomNameObject;
-import appeng.helpers.IInterfaceHost;
 import appeng.me.GridAccessException;
-import appeng.me.GridNodeCollection;
 import appeng.me.helpers.AENetworkProxy;
 import appeng.me.helpers.MachineSource;
 import appeng.me.storage.MEMonitorIFluidHandler;
@@ -89,15 +86,10 @@ import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler;
-import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.items.IItemHandler;
 
 import javax.annotation.Nullable;
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 
 public class DualityFluidInterface implements IGridTickable, IStorageMonitorable, IAEFluidInventory, IAEAppEngInventory, IUpgradeableHost, IConfigManagerHost, IConfigurableFluidInventory {
@@ -134,7 +126,7 @@ public class DualityFluidInterface implements IGridTickable, IStorageMonitorable
 
         this.mySource = new MachineSource(this.iHost);
         this.interfaceRequestSource = new InterfaceRequestSource(this.iHost);
-        this.tanks = new AENetworkFluidInventory(this::getStorageGrid, this.mySource, this, NUMBER_OF_TANKS, TANK_CAPACITY);
+        this.tanks = new AEFluidInventory(this, 9, 4000);
 
         this.fluids.setChangeSource(this.mySource);
         this.items.setChangeSource(this.mySource);

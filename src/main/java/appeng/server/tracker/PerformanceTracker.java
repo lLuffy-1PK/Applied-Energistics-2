@@ -1,15 +1,16 @@
 package appeng.server.tracker;
 
+import appeng.api.networking.IGrid;
 import appeng.me.Grid;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 
 import java.util.Map;
 
 public class PerformanceTracker {
     public static final PerformanceTracker INSTANCE = new PerformanceTracker();
-
-    private Map<Grid, Tracker> trackers = new Object2ObjectOpenHashMap<>();
-    private Map<Grid, Tracker> tracking = new Object2ObjectOpenHashMap<>();
+    private final Map<IGrid, Tracker> trackers = new Reference2ObjectOpenHashMap();
+    private Tracker currentTracking = null;
 
     private PerformanceTracker() {
 
@@ -17,27 +18,33 @@ public class PerformanceTracker {
 
     public void resetTracker() {
         trackers.clear();
-        tracking.clear();
     }
 
-    public Map<Grid, Tracker> getTrackers() {
-        return trackers;
+    public Map<IGrid, Tracker> getTrackers() {
+        return this.trackers;
     }
 
-    public void startTracking() {
-        this.trackers.clear();
-        this.trackers = tracking;
-        this.tracking = new Object2ObjectOpenHashMap<>();
-    }
-
-    public void startTracking(Grid g) {
-        Tracker tracker = trackers.computeIfAbsent(g, v -> new Tracker(g));
+    public void startTracking(IGrid g) {
+        Tracker tracker = this.trackers.computeIfAbsent(g, (v) -> new Tracker(g));
         tracker.startTracking();
-        tracking.put(g, tracker);
+        this.currentTracking = tracker;
     }
 
-    public void endTracking(Grid g) {
-        Tracker tracker = tracking.computeIfAbsent(g, v -> new Tracker(g));
+    public void endTracking(IGrid g) {
+        Tracker tracker = this.trackers.computeIfAbsent(g, (v) -> new Tracker(g));
         tracker.endTracking();
+        this.currentTracking = null;
+    }
+
+    public void startSubTracking(String name) {
+        if (this.currentTracking != null) {
+            this.currentTracking.startSubTracking(name);
+        }
+    }
+
+    public void endSubTracking() {
+        if (this.currentTracking != null) {
+            this.currentTracking.endSubTracking();
+        }
     }
 }

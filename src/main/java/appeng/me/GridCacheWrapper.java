@@ -32,37 +32,37 @@ public class GridCacheWrapper implements IGridCache {
 
     public GridCacheWrapper(final IGridCache gc) {
         this.myCache = gc;
-        this.name = this.getCache().getClass().getName();
+        this.name = this.myCache.getClass().getName();
     }
 
     @Override
     public void onUpdateTick() {
-        this.getCache().onUpdateTick();
+        this.myCache.onUpdateTick();
     }
 
     @Override
     public void removeNode(final IGridNode gridNode, final IGridHost machine) {
-        this.getCache().removeNode(gridNode, machine);
+        this.myCache.removeNode(gridNode, machine);
     }
 
     @Override
     public void addNode(final IGridNode gridNode, final IGridHost machine) {
-        this.getCache().addNode(gridNode, machine);
+        this.myCache.addNode(gridNode, machine);
     }
 
     @Override
     public void onSplit(final IGridStorage storageB) {
-        this.getCache().onSplit(storageB);
+        this.myCache.onSplit(storageB);
     }
 
     @Override
     public void onJoin(final IGridStorage storageB) {
-        this.getCache().onJoin(storageB);
+        this.myCache.onJoin(storageB);
     }
 
     @Override
     public void populateGridStorage(final IGridStorage storage) {
-        this.getCache().populateGridStorage(storage);
+        this.myCache.populateGridStorage(storage);
     }
 
     public String getName() {
@@ -71,5 +71,9 @@ public class GridCacheWrapper implements IGridCache {
 
     IGridCache getCache() {
         return this.myCache;
+    }
+
+    public boolean typeEquals(Class<? extends IGridCache> gridCacheClass) {
+        return this.myCache.getClass() == gridCacheClass;
     }
 }

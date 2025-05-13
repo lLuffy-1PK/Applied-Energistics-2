@@ -28,6 +28,7 @@ import appeng.api.networking.ticking.ITickManager;
 import appeng.api.networking.ticking.TickRateModulation;
 import appeng.api.networking.ticking.TickingRequest;
 import appeng.me.cache.helpers.TickTracker;
+import appeng.server.tracker.PerformanceTracker;
 import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import net.minecraft.crash.CrashReport;
@@ -74,6 +75,7 @@ public class TickManagerCache implements ITickManager {
 
     @Override
     public void onUpdateTick() {
+        PerformanceTracker.INSTANCE.startSubTracking("Tick");
         TickTracker tt = null;
 
         try {
@@ -124,6 +126,7 @@ public class TickManagerCache implements ITickManager {
             tt.addEntityCrashInfo(crashreportcategory);
             throw new ReportedException(crashreport);
         }
+        PerformanceTracker.INSTANCE.endSubTracking();
     }
 
     private void addToQueue(final TickTracker tt) {

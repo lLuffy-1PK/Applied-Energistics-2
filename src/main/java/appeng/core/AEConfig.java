@@ -128,6 +128,12 @@ public final class AEConfig extends Configuration implements IConfigurableObject
     private int normalChannelCapacity = 8;
     private int denseChannelCapacity = 32;
 
+    // Limiter
+    private String[] limiterBannedItems = {};
+    public int patternSlotMaxNBTBytes = 0;
+    public String patternOverLimitBytesMessage = "§4Вы не можете закодировать данный шаблон, т.к. в нём содержится слишком сложный предмет!";
+
+
     private AEConfig(final File configFile) {
         super(configFile);
         this.configFile = configFile;
@@ -241,6 +247,10 @@ public final class AEConfig extends Configuration implements IConfigurableObject
         if (this.isFeatureEnabled(AEFeature.CRAFTING_CPU)) {
             this.craftingCalculationTimePerTick = this.get("craftingCPU", "craftingCalculationTimePerTick", this.craftingCalculationTimePerTick).getInt(this.craftingCalculationTimePerTick);
         }
+
+        this.limiterBannedItems = this.get("limiter", "limiterBannedItems", this.limiterBannedItems).getStringList();
+        this.patternSlotMaxNBTBytes = this.get("limiter", "patternSlotMaxNBTBytes", 0, "Лимит (в байтах) веса айтема, указанного в слоте шаблона. Действует только при кодировании шаблона в терминале шаблонов. Не распространяется на кодирование шаблонов верстака. Поставьте 0, если не требуется").getInt();
+        this.patternOverLimitBytesMessage = this.get("limiter", "patternOverLimitBytesMessage", this.patternOverLimitBytesMessage).getString();
 
         this.updatable = true;
     }
@@ -702,5 +712,18 @@ public final class AEConfig extends Configuration implements IConfigurableObject
 
     public int getDenseChannelCapacity() {
         return this.denseChannelCapacity;
+    }
+
+
+    public String[] getLimiterBannedItems() {
+        return this.limiterBannedItems;
+    }
+
+    public int getPatternSlotMaxNBTBytes() {
+        return this.patternSlotMaxNBTBytes;
+    }
+
+    public String getPatternOverLimitBytesMessage() {
+        return this.patternOverLimitBytesMessage;
     }
 }

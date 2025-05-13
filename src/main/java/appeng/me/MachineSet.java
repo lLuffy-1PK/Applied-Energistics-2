@@ -22,11 +22,10 @@ package appeng.me;
 import appeng.api.networking.IGridHost;
 import appeng.api.networking.IGridNode;
 import appeng.api.networking.IMachineSet;
+import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 
-import java.util.HashSet;
 
-
-public class MachineSet extends HashSet<IGridNode> implements IMachineSet {
+public class MachineSet extends ReferenceOpenHashSet<IGridNode> implements IMachineSet {
 
     private static final long serialVersionUID = 3224660708327386933L;
 

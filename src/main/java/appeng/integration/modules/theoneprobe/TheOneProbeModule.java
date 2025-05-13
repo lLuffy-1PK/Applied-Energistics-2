@@ -21,6 +21,7 @@ package appeng.integration.modules.theoneprobe;
 
 import appeng.integration.IIntegrationModule;
 import appeng.integration.modules.theoneprobe.config.AEConfigProvider;
+import appeng.integration.modules.theoneprobe.grid.GridPerfTrackerProvider;
 import mcjty.theoneprobe.api.ITheOneProbe;
 import net.minecraftforge.fml.common.event.FMLInterModComms;
 
@@ -40,6 +41,7 @@ public class TheOneProbeModule implements IIntegrationModule, Function<ITheOnePr
         input.registerProvider(new TileInfoProvider());
 
         input.registerProvider(new PartInfoProvider());
+        input.registerProvider(new GridPerfTrackerProvider());
 
         return null;
     }
