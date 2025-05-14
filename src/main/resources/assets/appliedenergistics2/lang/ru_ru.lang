@@ -530,6 +530,7 @@ item.appliedenergistics2.multi_part.cable_smart.name=МЭ Умный кабел�
 item.appliedenergistics2.multi_part.cable_dense_covered.name=МЭ Плотный закрытый кабель
 item.appliedenergistics2.multi_part.cable_dense_smart.name=МЭ Плотный умный кабель
 item.appliedenergistics2.multi_part.storage_monitor.name=МЭ Монитор хранения
+item.appliedenergistics2.multi_part.throughput_monitor.name=МЭ Монитор Пропускной способности
 item.appliedenergistics2.multi_part.conversion_monitor.name=МЭ Монитор преобразования
 item.appliedenergistics2.multi_part.crafting_terminal.name=МЭ Терминал крафта
 item.appliedenergistics2.multi_part.semi_dark_monitor.name=Осветительная панель

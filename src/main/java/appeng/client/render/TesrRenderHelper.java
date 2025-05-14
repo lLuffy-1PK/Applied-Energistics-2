@@ -34,6 +34,8 @@ import net.minecraft.util.EnumFacing;
 import net.minecraftforge.fluids.FluidStack;
 import org.lwjgl.opengl.GL11;
 
+import java.util.Optional;
+
 
 /**
  * Helper methods for rendering TESRs.
@@ -116,6 +118,34 @@ public class TesrRenderHelper {
         }
     }
 
+    /**
+     * Render an item in 2D with customizable offset.
+     *
+     * @param itemStack The item to render
+     * @param scale The scale factor for rendering
+     * @param offsetX X-axis offset from the default position
+     * @param offsetY Y-axis offset from the default position
+     */
+    public static void renderItem2d(ItemStack itemStack, float scale, float offsetX, float offsetY) {
+        if (!itemStack.isEmpty()) {
+            OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, 240.f, 240.0f);
+
+            GlStateManager.pushMatrix();
+
+            // The Z-scaling by 0.0001 causes the model to be visually "flattened"
+            // This cannot replace a proper projection, but it's cheap and gives the desired
+            // effect at least from head-on
+            GlStateManager.scale(scale / 32.0f, scale / 32.0f, 0.0001f);
+            // Position the item icon with the provided offsets
+            GlStateManager.translate(-8 + offsetX, -11 + offsetY, 0);
+
+            RenderItem renderItem = Minecraft.getMinecraft().getRenderItem();
+            renderItem.renderItemAndEffectIntoGUI(itemStack, 0, 0);
+
+            GlStateManager.popMatrix();
+        }
+    }
+
     public static void renderFluid2d(FluidStack fluidStack, float scale) {
         if (fluidStack != null) {
             GlStateManager.pushMatrix();
@@ -178,6 +208,56 @@ public class TesrRenderHelper {
         GlStateManager.translate(-0.5f * width, 0.0f, 0.5f);
         fr.drawString(renderedStackSize, 0, 0, 0);
 
+    }
+
+    /**
+     * Render an item in 2D with both the amount and the rate of change information below it.
+     *
+     * @param itemStack The IAEItemStack to render
+     * @param itemScale Scale factor for the item rendering
+     * @param spacing Spacing between elements
+     * @param itemNumsChange The rate of change to display
+     * @param timeMode The time mode label
+     */
+    public static void renderItem2dWithAmountAndChange(IAEItemStack itemStack, float itemScale, float spacing,
+                                                       double itemNumsChange, String timeMode) {
+        final ItemStack renderStack = itemStack.asItemStackRepresentation();
+
+        // Render the item
+        TesrRenderHelper.renderItem2d(renderStack, itemScale, 0f, -5.0f);
+
+        // Get stack size information
+        final long stackSize = itemStack.getStackSize();
+        final String renderedStackSize = NUMBER_CONVERTER.toWideReadableForm(stackSize);
+        final String renderedStackSizeChange = (itemNumsChange > 0 ? "+" : "") +
+                NUMBER_CONVERTER.toWideReadableForm((long) itemNumsChange) +
+                timeMode;
+
+        // Get font renderer
+        final FontRenderer fr = Minecraft.getMinecraft().fontRenderer;
+
+        // Render the item count
+        final int width = fr.getStringWidth(renderedStackSize);
+
+        GlStateManager.translate(0.0f, spacing, 0);
+        GlStateManager.scale(0.8f / 62.0f, 0.8f / 62.0f, 0.8f / 62.0f);
+        GlStateManager.translate(-0.5f * width, 0.0f, 0.5f);
+        fr.drawString(renderedStackSize, 0, 0, 0);
+
+        // Render the change rate
+        final int changeWidth = fr.getStringWidth(renderedStackSizeChange);
+        GlStateManager.translate(0.5f * width, fr.FONT_HEIGHT + 1, 0);
+        GlStateManager.translate(-0.5f * changeWidth, 0, 0);
+
+        // Determine color based on change rate
+        int color = 0;
+        if (itemNumsChange < 0) {
+            color = 0xFF0000; // Red for negative changes
+        } else if (itemNumsChange > 0) {
+            color = 0x17B66C; // Green for positive changes
+        }
+
+        fr.drawString(renderedStackSizeChange, 0, 0, color);
     }
 
     public static void renderFluid2dWithAmount(IAEFluidStack fluidStack, float scale, float spacing) {

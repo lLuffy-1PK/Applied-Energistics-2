@@ -2,7 +2,9 @@ package appeng.container.implementations;
 
 import appeng.api.networking.crafting.ICraftingCPU;
 import appeng.api.storage.data.IAEItemStack;
+import appeng.util.IWideReadableNumberConverter;
 import appeng.util.ItemSorters;
+import appeng.util.ReadableNumberConverter;
 import appeng.util.item.AEItemStack;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.nbt.CompressedStreamTools;
@@ -12,6 +14,8 @@ import javax.annotation.Nullable;
 import java.io.*;
 
 public class CraftingCPUStatus implements Comparable<CraftingCPUStatus> {
+
+    private static final IWideReadableNumberConverter NUMBER_CONVERTER = ReadableNumberConverter.INSTANCE;
 
     @Nullable
     private final ICraftingCPU serverCluster;
@@ -160,5 +164,9 @@ public class CraftingCPUStatus implements Comparable<CraftingCPUStatus> {
         } else {
             return Long.toString(val);
         }
+    }
+
+    public String formatShorterCoprocessors() {
+        return NUMBER_CONVERTER.toWideReadableForm(getCoprocessors());
     }
 }

@@ -137,6 +137,10 @@ public class Platform {
 
     public static final int DEF_OFFSET = 16;
 
+    private static final int DIVISION_BASE = 1000;
+    private static final char[] NUM_UNIT = "kMGTPE".toCharArray();
+    private static final DecimalFormat df = new DecimalFormat("#.##");
+
     private static final boolean CLIENT_INSTALL = FMLCommonHandler.instance().getSide().isClient();
 
     /*
@@ -1502,5 +1506,43 @@ public class Platform {
 
     public static boolean isSameItem(@Nullable final ItemStack left, @Nullable final ItemStack right) {
         return left != null && right != null && left.isItemEqual(right);
+    }
+
+    /**
+     * From large double to num with unit
+     *
+     * @param n number wait to format
+     * @return String
+     */
+    public static String formatNumberDoubleRestrictedByWidth(final double n, final int width) {
+        final String numberString = df.format(n);
+        int numberSize = numberString.length();
+        if (numberSize <= width) {
+            return numberString;
+        }
+
+        double base = n;
+        double last = base * 1000;
+        int exponent = -1;
+        String postFix = "";
+
+        while (base >= 1000) {
+            last = base;
+            base /= DIVISION_BASE;
+
+            // adds +1 due to the postfix
+            exponent++;
+            postFix = String.valueOf(NUM_UNIT[exponent]);
+        }
+
+        final String withPrecision = df.format(last / DIVISION_BASE);
+        final String withoutPrecision = Long.toString((long) base);
+
+        final String slimResult = (withPrecision.length() <= width) ? withPrecision : withoutPrecision;
+
+        // post condition
+        assert slimResult.length() <= width;
+
+        return slimResult + postFix;
     }
 }
