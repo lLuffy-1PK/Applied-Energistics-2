@@ -1004,17 +1004,21 @@ public abstract class AEBaseContainer extends Container {
                                 slotStack.grow(toInsert);
 
                                 slot.putStack(slot.getStack());
-                                return ItemStack.EMPTY;
+                                return draggedStack.copy();
                             }
+
+                            return ItemStack.EMPTY;
+                        } else if (slotStack.getCount() > slotStack.getMaxStackSize()) {
+                            return ItemStack.EMPTY;
                         }
                     }
                 }
                 // Fixes taking and halving issues from oversized slots.
                 else if (dragType == 0 || dragType == 1) {
                     if (slot.canTakeStack(player) && !slotStack.isEmpty()) {
-                        var result = slotStack.copy();
                         var toTake = Math.min(slotStack.getCount(), slotStack.getMaxStackSize());
-                        this.invPlayer.setItemStack(slot.decrStackSize(dragType == 0 ? toTake : (toTake + 1) / 2));
+                        var result = slot.decrStackSize(dragType == 0 ? toTake : (toTake + 1) / 2);
+                        this.invPlayer.setItemStack(result);
 
                         slot.putStack(slot.getStack());
                         return result;
