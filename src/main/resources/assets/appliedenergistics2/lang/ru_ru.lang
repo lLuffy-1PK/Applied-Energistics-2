@@ -90,6 +90,9 @@ chat.appliedenergistics2.ResetSettings=Новая конфигурация ус�
 chat.appliedenergistics2.AmmoDepleted=Боеприпасы исчерпаны.
 chat.appliedenergistics2.isNowLocked=Монитор заблокирован.
 chat.appliedenergistics2.isNowUnlocked=Монитор разблокирован.
+chat.appliedenergistics2.InterfaceInOtherDimParam=МЭ Интерфейс расположен в измерении: %d [ %s ] и не может быть выделен
+chat.appliedenergistics2.InterfaceInOtherDim=МЭ Интерфейс находится в другом измерении и не может быть выделен
+chat.appliedenergistics2.InterfaceHighlighted=МЭ Интерфейс теперь подсвечивается по адресу X: %s Y: %s Z: %s
 
 // Creative Tabs
 itemGroup.appliedenergistics2=Applied Energistics 2
@@ -247,10 +250,24 @@ gui.appliedenergistics2.Excluded=Не принимать
 gui.appliedenergistics2.Partitioned=Размечена
 gui.appliedenergistics2.Precise=Точная
 gui.appliedenergistics2.Fuzzy=Неточная
-gui.appliedenergistics2.SmallFontCraft=Сделать
+gui.appliedenergistics2.SmallFontCraft=Крафт
 gui.appliedenergistics2.LargeFontCraft=+
 gui.appliedenergistics2.Renamer=Пользовательское имя: (Введите, чтобы установить)
 gui.appliedenergistics2.Nothing=Ничего
+gui.appliedenergistics2.CraftingToastDone=Создание завершено!
+gui.appliedenergistics2.CraftingToastCancelled=Создание отменено!
+gui.appliedenergistics2.Sticky=Липкий
+gui.appliedenergistics2.PatternEncoder=Закодировано %s
+gui.appliedenergistics2.FluidTerminal=Жидк. терминал
+gui.appliedenergistics2.CraftingLock=Создание заблокировано
+gui.appliedenergistics2.NoneLock=Создание разблокировано
+gui.appliedenergistics2.HighRedstoneLock=Заблокировано редстоун сигналом
+gui.appliedenergistics2.LowRedstoneLock=Отсутствует редстоун сигнал
+gui.appliedenergistics2.ResultLock=Ожидание выхода, указанного в шаблоне, для разблокировки
+gui.appliedenergistics2.UntilPulseUnlock=Ожидание пульса для разблокировки
+gui.appliedenergistics2.CanBeEnchanted=Может быть зачарована
+gui.appliedenergistics2.IncreasedEnergyUseFromEnchants=Зачарования увеличивают потребление энергии
+gui.appliedenergistics2.Deprecated=Устаревший
 
 // GUI Tooltips
 gui.tooltips.appliedenergistics2.Stash=Хранить предметы
@@ -320,6 +337,12 @@ gui.tooltips.appliedenergistics2.Disabled=Отключено
 gui.tooltips.appliedenergistics2.Enable=Включено
 gui.tooltips.appliedenergistics2.Blocking=Не проталкивать предметы крафта, если инвентарь содержит предметы.
 gui.tooltips.appliedenergistics2.NonBlocking=Игнорировать содержимое целевого инвентаря.
+gui.tooltips.appliedenergistics2.LockCraftingMode=Блокировка создания
+gui.tooltips.appliedenergistics2.LockCraftingModeNone=Никогда
+gui.tooltips.appliedenergistics2.LockCraftingUntilRedstonePulse=До тех пор, пока не будет получен импульс редстоуна
+gui.tooltips.appliedenergistics2.LockCraftingWhileRedstoneHigh=По редстоун сигналу
+gui.tooltips.appliedenergistics2.LockCraftingWhileRedstoneLow=Без редстоун сигнала
+gui.tooltips.appliedenergistics2.LockCraftingUntilResultReturned=До тех пор, пока не будет возвращен основной результат создания
 gui.tooltips.appliedenergistics2.Craft=Режим крафта
 gui.tooltips.appliedenergistics2.CraftOnly=Не использовать хранящиеся предметы, только создавать предметы во время экспорта.
 gui.tooltips.appliedenergistics2.CraftEither=Использовать хранящиеся предметы или создавать предметы во время экспорта.
@@ -370,12 +393,23 @@ gui.tooltips.appliedenergistics2.DecreaseByOne=Уменьшить на един�
 gui.tooltips.appliedenergistics2.DecreaseByOneDesc=Попытаюсь добавить уменьшение количества предметов, установленных в слотах для крафта, на единицу НЕ ПОДДЕРЖИВАЕТ СООТНОШЕНИЕ ИНГРЕДИЕНТОВ
 gui.tooltips.appliedenergistics2.MaxCount=Увеличить количество слотов
 gui.tooltips.appliedenergistics2.MaxCountDesc=Будет максимизировать выход, сохраняя коэффициент ввода предметов, установленных в слотах крафта
-gui.tooltips.appliedenergistics2.FreeMolecularSlotShortcut=Показать интерфейсы крафта со свободными слотами
-gui.tooltips.appliedenergistics2.FreeMolecularSlotShortcutDesc=Ярлык, который переключает интерфейсы со свободными слотами и ищет молекулярные ассемблеры
+gui.tooltips.appliedenergistics2.ToggleMolecularAssemblers=Переключает отображение только интерфейсов создания
+gui.tooltips.appliedenergistics2.ToggleMolecularAssemblersOffDesc=Показывать все интерфейсы
+gui.tooltips.appliedenergistics2.ToggleMolecularAssemblersOnDesc=Показывать только интерфейсы, подключённые к молекулярный сборщикам
 gui.tooltips.appliedenergistics2.ToggleShowFullInterfaces=Переключает отображение интерфейсов с заполненными слотами
-gui.tooltips.appliedenergistics2.ToggleShowFullInterfacesOnDesc=Показ всех интерфейсов
+gui.tooltips.appliedenergistics2.ToggleShowFullInterfacesOnDesc=Показывать все интерфейсы
 gui.tooltips.appliedenergistics2.ToggleShowFullInterfacesOffDesc=Показаны только интерфейсы со свободными слотами
+gui.tooltips.appliedenergistics2.ToggleShowOnlyInvalidInterface=Переключает отображение интерфейсов с неправильными шаблонами
+gui.tooltips.appliedenergistics2.ToggleShowOnlyInvalidInterfaceOffDesc=Показывать все интерфейсы
+gui.tooltips.appliedenergistics2.ToggleShowOnlyInvalidInterfaceOnDesc=Показывать только интерфейсы с неправильными шаблонами
 gui.tooltips.appliedenergistics2.HighlightInterface=Подсветка интерфейса
+gui.tooltips.appliedenergistics2.ConfigureInterface=Настроить интерфейс
+gui.tooltips.appliedenergistics2.SearchFieldInputs=Входы рецепта
+gui.tooltips.appliedenergistics2.SearchFieldOutputs=Выходы рецепта
+gui.tooltips.appliedenergistics2.SearchFieldNames=Именя интерфейсов
+gui.tooltips.appliedenergistics2.PartialTransfer=Переместите сохраненные предметы в сетку для крафта
+gui.tooltips.appliedenergistics2.MissingItem=§cНедостающий предмет
+gui.tooltips.appliedenergistics2.CraftableItem=§9Создаваемый предмет
 
 // Units
 gui.appliedenergistics2.units.appliedenergstics=AE
@@ -418,6 +452,8 @@ waila.appliedenergistics2.p2p_input_many_outputs=Связанный (Сторо�
 waila.appliedenergistics2.p2p_output_one_input=Связанный (Сторона выхода) - 1 Вход
 waila.appliedenergistics2.p2p_output_many_inputs=Связанный (Сторона выхода) - §2%d§r Входов
 waila.appliedenergistics2.P2POutput=Связанный (Сторона выхода)
+waila.appliedenergistics2.EnchantedWith=Зачаровано:
+waila.appliedenergistics2.IdentityDeprecated=Устаревший. Конвертируйте с помощью SHIFT + ПКМ
 
 // TheOneProbe
 theoneprobe.appliedenergistics2.crafting=Создается: §2%1$s§r
@@ -519,6 +555,7 @@ item.appliedenergistics2.material.silicon_print.name=Отпечатанный к
 item.appliedenergistics2.material.name_press.name=Именующий пресс для высекателя
 item.appliedenergistics2.material.sky_dust.name=Пыль небесного камня
 item.appliedenergistics2.material.card_crafting.name=Карта крафта
+item.appliedenergistics2.material.card_sticky.name=Карта липкости
 
 item.appliedenergistics2.multi_part.annihilation_plane.name=МЭ Плоскость истребления
 item.appliedenergistics2.multi_part.fluid_annihilation_plane.name=МЭ Жидкостная плоскость истребления
@@ -545,7 +582,7 @@ item.appliedenergistics2.multi_part.fluid_import_bus.name=МЭ Жидкостн�
 item.appliedenergistics2.multi_part.interface.name=МЭ Интерфейс
 item.appliedenergistics2.multi_part.fluid_interface.name=МЭ Жидкостный интерфейс
 item.appliedenergistics2.multi_part.level_emitter.name=МЭ Излучатель уровня
-item.appliedenergistics2.multi_part.fluid_level_emitter.name=МЭ Излучатель уровня
+item.appliedenergistics2.multi_part.fluid_level_emitter.name=МЭ Жидкостный излучатель уровня
 item.appliedenergistics2.multi_part.p2p_tunnel.name=Туннель точка-точка
 item.appliedenergistics2.multi_part.pattern_terminal.name=МЭ Терминал шаблонов
 item.appliedenergistics2.multi_part.expanded_processing_pattern_terminal.name=ME Терминал расширенных шаблонов
@@ -592,6 +629,7 @@ item.appliedenergistics2.matter_cannon.name=Материальная пушка
 item.appliedenergistics2.memory_card.name=Карта памяти
 item.appliedenergistics2.color_applicator.name=Аппликатор цвета
 item.appliedenergistics2.wireless_terminal.name=Беспроводной терминал
+item.appliedenergistics2.wireless_interface_terminal.name=Беспроводной терминал интерфейсов
 item.appliedenergistics2.wireless_crafting_terminal.name=Беспроводной терминал изготовления
 item.appliedenergistics2.wireless_pattern_terminal.name=Беспроводной терминал шаблонов
 item.appliedenergistics2.wireless_fluid_terminal.name=Беспроводной жидкостный терминал
@@ -674,6 +712,7 @@ key.open_wireless_terminal.desc=Открыть беспроводной терм
 key.open_wireless_crafting_terminal.desc=Открыть беспроводной терминал изготовления
 key.open_wireless_pattern_terminal.desc=Открыть беспроводной терминал шаблонов
 key.open_wireless_fluid_terminal.desc=Открыть беспроводной жидкостный терминал
+key.open_wireless_interface_terminal.desc=Открыть беспроводной терминал интерфейсов
 
 # Переводы для PerfTracker
 perftracker.reset=Трекер производительности сброшен.
