@@ -444,17 +444,6 @@ public abstract class AEBaseContainer extends Container {
                         continue;
                     }
 
-                    if (ItemMaterial.instance.getType(tis) != null) {
-                        // Check now container is upgradeable or it's subclass
-                        if (ContainerUpgradeable.class.isAssignableFrom(this.getClass())) {
-                            // Check source or target
-                            if (!((d.inventory instanceof UpgradeInventory)
-                                    || (clickSlot.inventory instanceof UpgradeInventory))) {
-                                continue;
-                            }
-                        }
-                    }
-
                     if (d.isItemValid(tis)) {
                         if (!d.getHasStack()) {
                             int maxSize = Math.min(tis.getMaxStackSize(), d.getSlotStackLimit());
