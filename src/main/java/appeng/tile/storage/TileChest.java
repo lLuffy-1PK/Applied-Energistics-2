@@ -600,7 +600,14 @@ public class TileChest extends AENetworkPowerTile implements IMEChest, ITerminal
             T injected = super.injectItems(input, mode, src);
             if (mode == Actionable.MODULATE && (injected == null || injected.getStackSize() != input.getStackSize())) {
                 if (TileChest.this.isPowered() && this.getInternalHandler().getCellInv() != null) {
-                    TileChest.this.cellHandler.postChangesToListeners(Collections.singletonList(input.copy().setStackSize(input.getStackSize() - (injected == null ? 0 : injected.getStackSize()))), TileChest.this.mySrc);
+                    if (TileChest.this.cellHandler != null && TileChest.this.mySrc != null) {
+                        TileChest.this.cellHandler.postChangesToListeners(
+                                Collections.singletonList(
+                                        input.copy().setStackSize(input.getStackSize() - (injected == null ? 0 : injected.getStackSize()))
+                                ),
+                                TileChest.this.mySrc
+                        );
+                    }
                 }
             }
             return injected;
@@ -639,7 +646,14 @@ public class TileChest extends AENetworkPowerTile implements IMEChest, ITerminal
             T extracted = super.extractItems(request, mode, src);
             if (mode == Actionable.MODULATE && extracted != null) {
                 if (TileChest.this.isPowered() && this.getInternalHandler().getCellInv() != null) {
-                    TileChest.this.cellHandler.postChangesToListeners(Collections.singletonList(request.copy().setStackSize(-extracted.getStackSize())), TileChest.this.mySrc);
+                    if (TileChest.this.cellHandler != null && TileChest.this.mySrc != null) {
+                        TileChest.this.cellHandler.postChangesToListeners(
+                                Collections.singletonList(
+                                        request.copy().setStackSize(-extracted.getStackSize())
+                                ),
+                                TileChest.this.mySrc
+                        );
+                    }
                 }
             }
             return extracted;
