@@ -21,6 +21,7 @@ package appeng.client.gui;
 
 import appeng.api.storage.data.IAEFluidStack;
 import appeng.api.storage.data.IAEItemStack;
+import appeng.client.ClientHelper;
 import appeng.client.gui.widgets.GuiCustomSlot;
 import appeng.client.gui.widgets.GuiScrollbar;
 import appeng.client.gui.widgets.ITooltip;
@@ -190,7 +191,7 @@ public abstract class AEBaseGui extends GuiContainer implements IMTModGuiContain
             }
         }
         GlStateManager.enableDepth();
-        if (Platform.isModLoaded("jei")) {
+        if (Platform.isModLoaded("jei") && !ClientHelper.isHei) {
             bookmarkedJEIghostItem(mouseX, mouseY);
         }
         GlStateManager.disableDepth();
@@ -965,9 +966,9 @@ public abstract class AEBaseGui extends GuiContainer implements IMTModGuiContain
                     ItemStack stackUnderCursor = this.mc.player.inventory.getItemStack();
 
                     if (wasDragSplitting
-                        && this.dragSplittingSlots.contains(s)
-                        && this.dragSplittingSlots.size() > 1
-                        && !stackUnderCursor.isEmpty()) {
+                            && this.dragSplittingSlots.contains(s)
+                            && this.dragSplittingSlots.size() > 1
+                            && !stackUnderCursor.isEmpty()) {
                         if (Container.canAddItemToSlot(s, stackUnderCursor, true) && this.inventorySlots.canDragIntoSlot(s))
                         {
                             drawRect(s.xPos, s.yPos, s.xPos + 16, s.yPos + 16, -2130706433);
@@ -1099,14 +1100,14 @@ public abstract class AEBaseGui extends GuiContainer implements IMTModGuiContain
     @Override
     @Optional.Method(modid = "mousetweaks")
     public boolean MT_disableRMBDraggingFunctionality() {
-       if (this.dragSplitting && this.dragSplittingButton == 1) {
-           this.dragSplitting = false;
-           // Don't ignoreMouseUp on slots that can't accept the item. (crafting output, ME slot, etc.)
-           if (this.getSlotUnderMouse() != null && this.getSlotUnderMouse().isItemValid(this.mc.player.inventory.getItemStack())) {
-               this.ignoreMouseUp = true;
-           }
-           return true;
-       }
-       return false;
+        if (this.dragSplitting && this.dragSplittingButton == 1) {
+            this.dragSplitting = false;
+            // Don't ignoreMouseUp on slots that can't accept the item. (crafting output, ME slot, etc.)
+            if (this.getSlotUnderMouse() != null && this.getSlotUnderMouse().isItemValid(this.mc.player.inventory.getItemStack())) {
+                this.ignoreMouseUp = true;
+            }
+            return true;
+        }
+        return false;
     }
 }
