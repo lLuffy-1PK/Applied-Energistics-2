@@ -34,7 +34,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraftforge.fluids.FluidStack;
 import org.lwjgl.opengl.GL11;
 
-import java.util.Optional;
+import java.util.Locale;
 
 
 /**
@@ -229,9 +229,7 @@ public class TesrRenderHelper {
         // Get stack size information
         final long stackSize = itemStack.getStackSize();
         final String renderedStackSize = NUMBER_CONVERTER.toWideReadableForm(stackSize);
-        final String renderedStackSizeChange = (itemNumsChange > 0 ? "+" : "") +
-                NUMBER_CONVERTER.toWideReadableForm((long) itemNumsChange) +
-                timeMode;
+        final String renderedStackSizeChange = formatChangeRate(itemNumsChange) + timeMode;
 
         // Get font renderer
         final FontRenderer fr = Minecraft.getMinecraft().fontRenderer;
@@ -258,6 +256,31 @@ public class TesrRenderHelper {
         }
 
         fr.drawString(renderedStackSizeChange, 0, 0, color);
+    }
+
+    private static String formatChangeRate(double itemNumsChange) {
+        double abs = Math.abs(itemNumsChange);
+        if (abs < 1.0e-9) {
+            return "0";
+        }
+
+        String sign = itemNumsChange > 0 ? "+" : itemNumsChange < 0 ? "-" : "";
+        String formatted;
+        if (abs >= 1000) {
+            formatted = NUMBER_CONVERTER.toWideReadableForm(Math.round(abs));
+        } else if (abs >= 100) {
+            formatted = String.format(Locale.ROOT, "%.0f", abs);
+        } else if (abs >= 10) {
+            formatted = String.format(Locale.ROOT, "%.1f", abs);
+        } else if (abs >= 1) {
+            formatted = String.format(Locale.ROOT, "%.2f", abs);
+        } else if (abs >= 0.01) {
+            formatted = String.format(Locale.ROOT, "%.3f", abs);
+        } else {
+            return sign.isEmpty() ? "<0.01" : sign + "<0.01";
+        }
+
+        return sign + formatted;
     }
 
     public static void renderFluid2dWithAmount(IAEFluidStack fluidStack, float scale, float spacing) {
