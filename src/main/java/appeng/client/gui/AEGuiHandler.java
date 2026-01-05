@@ -13,6 +13,7 @@ import appeng.container.interfaces.IJEIGhostIngredients;
 import appeng.container.interfaces.ISpecialSlotIngredient;
 import appeng.container.slot.IJEITargetSlot;
 import appeng.core.AELog;
+import com.github.bsideup.jabel.Desugar;
 import mezz.jei.api.gui.IAdvancedGuiHandler;
 import mezz.jei.api.gui.IGhostIngredientHandler;
 import net.minecraft.client.gui.GuiScreen;
@@ -119,45 +120,59 @@ public class AEGuiHandler implements IAdvancedGuiHandler<AEBaseGui>, IGhostIngre
         return (guiSloty * 3) + guiSlotx + (currentScroll * 3);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     @Nonnull
     public <I> List<Target<I>> getTargets(@Nonnull AEBaseGui gui, @Nonnull I ingredient, boolean doStart) {
-        if (!(gui instanceof IJEIGhostIngredients g)) return Collections.emptyList();
+        if (!(gui instanceof IJEIGhostIngredients jeiGui)) {
+            return Collections.emptyList();
+        }
 
+        List<Target<I>> targets = getPhantomTargets(ingredient, jeiGui);
+
+        if (doStart && GuiScreen.isShiftKeyDown() && Mouse.isButtonDown(0)) {
+            if (gui instanceof GuiUpgradeable || gui instanceof GuiPatternTerm || gui instanceof GuiExpandedProcessingPatternTerm) {
+                for (Target<I> target : targets) {
+                    Target<I> targetToFind = target;
+
+                    if (target instanceof HeiProxyTarget<I> heiTarget) {
+                        targetToFind = heiTarget.original();
+                    }
+
+                    if (jeiGui.getFakeSlotTargetMap().get(targetToFind) instanceof IJEITargetSlot jeiSlot) {
+                        if (jeiSlot.needAccept()) {
+                            target.accept(ingredient);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        return targets;
+    }
+
+    @SuppressWarnings("unchecked")
+    private <I> @NotNull List<Target<I>> getPhantomTargets(@NotNull I ingredient, IJEIGhostIngredients jeiGui) {
         // HEI Specific Behaviour
         if (ClientHelper.isHei) {
             Object ingToUse = getIngFromBookmarkItem(ingredient);
             if (ingToUse != null) {
-                List<Target<Object>> phantomTargets = (List<Target<Object>>) (Object) g.getPhantomTargets(ingToUse);
+                List<Target<Object>> phantomTargets = (List<Target<Object>>) (Object) jeiGui.getPhantomTargets(ingToUse);
 
                 List<Target<I>> result = new ArrayList<>();
                 for (Target<Object> target : phantomTargets) {
-                    result.add(new Target<>() {
-                        @Override
-                        public @NotNull Rectangle getArea() {
-                            return target.getArea();
-                        }
-
-                        @Override
-                        public void accept(@NotNull I ingredient) {
-                            Object ingToUse = getIngFromBookmarkItem(ingredient);
-                            if (ingToUse != null) {
-                                target.accept(ingToUse);
-                            }
-                        }
-                    });
+                    result.add(new HeiProxyTarget<>((Target<I>) target));
                 }
 
                 return result;
             }
         }
 
-        return (List<Target<I>>) (Object) g.getPhantomTargets(ingredient);
+        return (List<Target<I>>) (Object) jeiGui.getPhantomTargets(ingredient);
     }
 
     @Nullable
-    private Object getIngFromBookmarkItem(Object ingredient) {
+    private static Object getIngFromBookmarkItem(Object ingredient) {
         try {
             Class<?> bookmarkItemClass = Class.forName("mezz.jei.bookmarks.BookmarkItem");
             if (bookmarkItemClass.isAssignableFrom(ingredient.getClass())) {
@@ -179,4 +194,21 @@ public class AEGuiHandler implements IAdvancedGuiHandler<AEBaseGui>, IGhostIngre
         return true;
     }
 
+    @SuppressWarnings("unchecked")
+    @Desugar
+    private record HeiProxyTarget<I>(Target<I> original) implements Target<I> {
+
+        @Override
+        public @NotNull Rectangle getArea() {
+            return original.getArea();
+        }
+
+        @Override
+        public void accept(@NotNull I ingredient) {
+            Object ingToUse = getIngFromBookmarkItem(ingredient);
+            if (ingToUse != null) {
+                original.accept((I) ingToUse);
+            }
+        }
+    }
 }
