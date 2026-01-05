@@ -78,10 +78,10 @@ public class FluidRepo {
 
         Pattern m;
         try {
-            m = Pattern.compile(innerSearch.toLowerCase(), Pattern.CASE_INSENSITIVE);
+            m = Pattern.compile(innerSearch.toLowerCase(), Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
         } catch (final Exception ignore1) {
             try {
-                m = Pattern.compile(Pattern.quote(innerSearch.toLowerCase()), Pattern.CASE_INSENSITIVE);
+                m = Pattern.compile(Pattern.quote(innerSearch.toLowerCase()), Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
             } catch (final Exception ignore2) {
                 return;
             }

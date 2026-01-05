@@ -198,10 +198,10 @@ public class ItemRepo {
 
         Pattern m = null;
         try {
-            m = Pattern.compile(this.innerSearch, Pattern.CASE_INSENSITIVE);
+            m = Pattern.compile(this.innerSearch, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
         } catch (final Throwable ignore) {
             try {
-                m = Pattern.compile(Pattern.quote(this.innerSearch), Pattern.CASE_INSENSITIVE);
+                m = Pattern.compile(Pattern.quote(this.innerSearch), Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
             } catch (final Throwable __) {
                 return;
             }
