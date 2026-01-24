@@ -350,7 +350,6 @@ public class WirelessTerminalGuiObject implements IPortableCell, IActionHost, II
             data = new NBTTagCompound();
         }
         viewCell.writeToNBT(data, "viewCell");
-        upgrades.writeToNBT(data, "upgrades");
     }
     
     public void saveChanges(NBTTagCompound data) {
@@ -364,8 +363,8 @@ public class WirelessTerminalGuiObject implements IPortableCell, IActionHost, II
     public void loadFromNBT() {
         NBTTagCompound data = effectiveItem.getTagCompound();
         if (data != null) {
-            viewCell.readFromNBT(data);
-            upgrades.readFromNBT(data);
+            viewCell.readFromNBT(data, "viewCell");
+            upgrades.readFromNBT(data, "upgrades");
         }
     }
 
