@@ -73,6 +73,10 @@ public class MultiCraftingTracker {
     }
 
     public boolean handleCrafting(final int x, final long itemToCraft, final IAEItemStack ais, final InventoryAdaptor d, final World w, final IGrid g, final ICraftingGrid cg, final IActionSource mySrc) {
+        if (d == null) {
+            return false;
+        }
+
         if (ais != null) {
             ItemStack inputStack = ais.createItemStack();
 
