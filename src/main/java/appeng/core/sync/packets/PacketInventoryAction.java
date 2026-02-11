@@ -186,7 +186,7 @@ public class PacketInventoryAction extends AppEngPacket {
                         if (aefs != null) {
                             aefs.setStackSize(1000);
                             ((ContainerFluidConfigurable) sender.openContainer).getFluidConfigInventory().setFluidInSlot(this.slot, aefs);
-                            NetworkHandler.instance().sendToServer(new PacketFluidSlot(Collections.singletonMap(this.slot, aefs)));
+                            NetworkHandler.instance().sendTo(new PacketFluidSlot(Collections.singletonMap(this.slot, aefs)), sender);
                         }
                     }
                 } else if (sender.openContainer instanceof ContainerInterfaceConfigurationTerminal) {
