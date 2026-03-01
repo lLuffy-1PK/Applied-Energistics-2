@@ -21,6 +21,8 @@ package appeng.parts.misc;
 
 import appeng.api.AEApi;
 import appeng.api.config.*;
+import appeng.api.networking.IGrid;
+import appeng.api.networking.IGridHost;
 import appeng.api.networking.IGridNode;
 import appeng.api.networking.events.MENetworkCellArrayUpdate;
 import appeng.api.networking.events.MENetworkChannelsChanged;
@@ -41,8 +43,10 @@ import appeng.api.storage.channels.IItemStorageChannel;
 import appeng.api.storage.data.IAEItemStack;
 import appeng.api.storage.data.IItemList;
 import appeng.api.util.AECableType;
+import appeng.api.util.AEPartLocation;
 import appeng.api.util.IConfigManager;
 import appeng.capabilities.Capabilities;
+import appeng.core.AELog;
 import appeng.core.AppEng;
 import appeng.core.settings.TickRates;
 import appeng.core.sync.GuiBridge;
@@ -406,13 +410,16 @@ public class PartStorageBus extends PartUpgradeable implements IGridTickable, IC
     }
 
     IMEInventory<IAEItemStack> getInventoryWrapper(TileEntity target) {
-
         EnumFacing targetSide = this.getSide().getFacing().getOpposite();
 
         // Prioritize a handler to directly link to another ME network
         IStorageMonitorableAccessor accessor = target.getCapability(Capabilities.STORAGE_MONITORABLE_ACCESSOR, targetSide);
 
         if (accessor != null) {
+            if (isConnectedToSameGrid(target)) {
+                return null;
+            }
+
             IStorageMonitorable inventory = accessor.getInventory(this.mySrc);
             if (inventory != null) {
                 return inventory.getInventory(AEApi.instance().storage().getStorageChannel(IItemStorageChannel.class));
@@ -439,7 +446,65 @@ public class PartStorageBus extends PartUpgradeable implements IGridTickable, IC
         }
 
         return null;
+    }
 
+    private boolean isConnectedToSameGrid(TileEntity targetTile) {
+        if (targetTile == null) {
+            return false;
+        }
+
+        try {
+            IGrid currentGrid = this.getProxy().getGrid();
+            if (currentGrid == null) {
+                return false;
+            }
+
+            if (targetTile instanceof TileCableBus cableBus) {
+                IPart attachedPart = cableBus.getPart(this.getSide().getOpposite());
+
+                if (attachedPart instanceof IGridHost) {
+                    IGridNode partNode = findGridNode((IGridHost) attachedPart);
+                    if (partNode != null) {
+                        IGrid partGrid = partNode.getGrid();
+                        if (partGrid != null && partGrid == currentGrid) {
+                            return true;
+                        }
+                    }
+                }
+
+                IGridNode busNode = findGridNode(cableBus);
+                if (busNode != null) {
+                    IGrid busGrid = busNode.getGrid();
+                    return busGrid != null && busGrid == currentGrid;
+                }
+
+                return false;
+            }
+
+            if (targetTile instanceof IGridHost) {
+                IGridNode targetNode = findGridNode((IGridHost) targetTile);
+                if (targetNode != null) {
+                    IGrid targetGrid = targetNode.getGrid();
+                    return targetGrid != null && targetGrid == currentGrid;
+                }
+            }
+        } catch (Exception ignored) {
+        }
+
+        return false;
+    }
+
+    private IGridNode findGridNode(IGridHost host) {
+        IGridNode node = host.getGridNode(AEPartLocation.INTERNAL);
+        if (node == null) {
+            for (AEPartLocation location : AEPartLocation.values()) {
+                node = host.getGridNode(location);
+                if (node != null) {
+                    break;
+                }
+            }
+        }
+        return node;
     }
 
     int createHandlerHash(TileEntity target) {
