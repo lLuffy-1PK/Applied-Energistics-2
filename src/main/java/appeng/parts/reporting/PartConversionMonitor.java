@@ -215,6 +215,9 @@ public class PartConversionMonitor extends AbstractPartMonitor {
     private void extractItem(final EntityPlayer player, int count) {
         if (!(this.getDisplayed() instanceof IAEItemStack))
             return;
+        if (!Platform.hasPermissions(this.getLocation(), player))
+            return;
+
         final IAEItemStack input = (IAEItemStack) this.getDisplayed().copy();
         if (input != null) {
             try {
