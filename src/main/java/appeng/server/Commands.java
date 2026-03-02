@@ -20,12 +20,14 @@ package appeng.server;
 
 
 import appeng.server.subcommands.ChunkLogger;
-import appeng.server.subcommands.Supporters;
 import appeng.server.subcommands.PerfTracker;
+import appeng.server.subcommands.Supporters;
+import appeng.services.compass.TestCompassCommand;
 
 
 public enum Commands {
     Chunklogger(4, new ChunkLogger()),
+    Compass(4, new TestCompassCommand()),
     Supporters(0, new Supporters()),
     PerfTracker(0, new PerfTracker());
 
