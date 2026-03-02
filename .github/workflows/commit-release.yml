@@ -1,0 +1,48 @@
+name: Commit Release
+
+on:
+  push:
+    branches:
+      - master
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: "17"
+
+      - name: Update Build Script (Before Build)
+        run: ./gradlew updateBuildScript
+
+      - name: Build Project
+        run: ./gradlew build --no-daemon
+
+      - name: Prepare Release Metadata
+        id: meta
+        shell: bash
+        run: |
+          short_sha="${GITHUB_SHA::8}"
+          echo "tag=commit-${short_sha}" >> "$GITHUB_OUTPUT"
+          echo "name=Commit build ${short_sha}" >> "$GITHUB_OUTPUT"
+
+      - name: Publish Commit Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.meta.outputs.tag }}
+          name: ${{ steps.meta.outputs.name }}
+          target_commitish: ${{ github.sha }}
+          prerelease: true
+          generate_release_notes: true
+          files: build/libs/*.jar
+          fail_on_unmatched_files: true
