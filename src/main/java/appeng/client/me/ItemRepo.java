@@ -168,10 +168,10 @@ public class ItemRepo {
 
             Pattern m;
             try {
-                m = Pattern.compile(innerSearch, Pattern.CASE_INSENSITIVE);
+                m = Pattern.compile(innerSearch, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
             } catch (final Throwable ignore) {
                 try {
-                    m = Pattern.compile(Pattern.quote(innerSearch), Pattern.CASE_INSENSITIVE);
+                    m = Pattern.compile(Pattern.quote(innerSearch), Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
                 } catch (final Throwable __) {
                     return;
                 }
