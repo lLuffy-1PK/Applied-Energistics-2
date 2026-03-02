@@ -99,6 +99,27 @@
                             "function": "appliedenergistics2:tally"
                         }
                     ]
+                },
+                {
+                    "entryName": "Iridium Press",
+                    "conditions": [
+                        {
+                            "condition": "appliedenergistics2:check_tally",
+                            "id": "appliedenergistics2:material:64",
+                            "max": 1
+                        }
+                    ],
+                    "type": "item",
+                    "name": "appliedenergistics2:material",
+                    "functions": [
+                        {
+                            "function": "set_data",
+                            "data": 64
+                        },
+                        {
+                            "function": "appliedenergistics2:tally"
+                        }
+                    ]
                 }
             ]
         },
