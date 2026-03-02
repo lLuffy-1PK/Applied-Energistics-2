@@ -163,8 +163,12 @@ public abstract class PartP2PTunnel<T extends PartP2PTunnel> extends PartBasicSt
         boolean pasteAsOutput = true;
         ItemStack is = player.getHeldItem(hand);
         if (is.isEmpty()) {
-            pasteAsOutput = false;
-            is = player.getHeldItemOffhand();
+            ItemStack offhand = player.getHeldItemOffhand();
+
+            if (!offhand.isEmpty() && offhand.getItem() instanceof IMemoryCard) {
+                pasteAsOutput = false;
+                is = offhand;
+            }
         }
 
         // UniqueIdentifier id = GameRegistry.findUniqueIdentifierFor( is.getItem() );
@@ -224,6 +228,7 @@ public abstract class PartP2PTunnel<T extends PartP2PTunnel> extends PartBasicSt
                 }
             }
             mc.notifyUser(player, MemoryCardMessages.INVALID_MACHINE);
+            return true;
         } else if (tt != null) // attunement
         {
             final ItemStack newType = tt.getPartItemStack();
