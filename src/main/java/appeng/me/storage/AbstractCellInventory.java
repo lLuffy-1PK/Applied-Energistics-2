@@ -106,6 +106,7 @@ public abstract class AbstractCellInventory<T extends IAEStack<T>> implements IC
         // add new pretty stuff...
         int x = 0;
         for (final T v : this.cellItems) {
+            if (x >= this.maxItemTypes) break;
             itemCount += v.getStackSize();
 
             final NBTTagCompound g = new NBTTagCompound();
@@ -118,7 +119,7 @@ public abstract class AbstractCellInventory<T extends IAEStack<T>> implements IC
 
         final short oldStoredItems = this.storedItemTypes;
 
-        this.storedItemTypes = (short) this.cellItems.size();
+        this.storedItemTypes = (short) Math.min(this.cellItems.size(), this.maxItemTypes);
         if (this.cellItems.isEmpty()) {
             this.tagCompound.removeTag(ITEM_TYPE_TAG);
         } else {
@@ -143,7 +144,7 @@ public abstract class AbstractCellInventory<T extends IAEStack<T>> implements IC
 
     protected void saveChanges() {
         // recalculate values
-        this.storedItemTypes = (short) this.cellItems.size();
+        this.storedItemTypes = (short) Math.min(this.cellItems.size(), this.maxItemTypes);
         this.storedItemCount = 0;
         for (final T v : this.cellItems) {
             this.storedItemCount += v.getStackSize();
@@ -165,7 +166,7 @@ public abstract class AbstractCellInventory<T extends IAEStack<T>> implements IC
 
         this.cellItems.resetStatus(); // clears totals and stuff.
 
-        final long types = this.getStoredItemTypes();
+        final long types = Math.min(this.getStoredItemTypes(), this.maxItemTypes);
         boolean needsUpdate = false;
 
         for (int slot = 0; slot < types; slot++) {
