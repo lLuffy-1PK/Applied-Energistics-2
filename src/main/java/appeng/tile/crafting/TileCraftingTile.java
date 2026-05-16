@@ -45,11 +45,12 @@ import appeng.tile.grid.AENetworkTile;
 import appeng.util.Platform;
 import com.google.common.collect.Lists;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextFormatting;
 
@@ -290,10 +291,7 @@ public class TileCraftingTile extends AENetworkTile implements IAEMultiBlock, IP
                                 TextFormatting.RED);
 
                         AELog.warn(warnMessage);
-                        MinecraftServer server = getWorld().getMinecraftServer();
-                        if (server != null) {
-                            server.getPlayerList().sendMessage(new TextComponentString(warnMessage));
-                        }
+                        this.sendOverflowWarning(warnMessage);
                         stackList.clear();
                         overflow = true;
                     }
@@ -306,6 +304,18 @@ public class TileCraftingTile extends AENetworkTile implements IAEMultiBlock, IP
             }
 
             this.cluster.destroy();
+        }
+    }
+
+    private void sendOverflowWarning(final String warnMessage) {
+        final TextComponentString message = new TextComponentString(warnMessage);
+        final AxisAlignedBB nearbyArea = new AxisAlignedBB(this.pos).grow(50);
+        final List<EntityPlayer> nearbyPlayers = this.world.getEntitiesWithinAABB(EntityPlayer.class, nearbyArea);
+
+        if (!nearbyPlayers.isEmpty()) {
+            for (final EntityPlayer player : nearbyPlayers) {
+                player.sendMessage(message.createCopy());
+            }
         }
     }
 

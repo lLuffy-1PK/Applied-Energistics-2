@@ -416,10 +416,6 @@ public class PartStorageBus extends PartUpgradeable implements IGridTickable, IC
         IStorageMonitorableAccessor accessor = target.getCapability(Capabilities.STORAGE_MONITORABLE_ACCESSOR, targetSide);
 
         if (accessor != null) {
-            if (isConnectedToSameGrid(target)) {
-                return null;
-            }
-
             // Break bidirectional StorageBus<->StorageBus loops between two different grids.
             // These loops can double-count contents (A sees B and B sees A).
             if (this.shouldBlockLoopLink()) {
@@ -452,28 +448,6 @@ public class PartStorageBus extends PartUpgradeable implements IGridTickable, IC
         }
 
         return null;
-    }
-
-    private boolean isConnectedToSameGrid(TileEntity targetTile) {
-        if (targetTile == null) {
-            return false;
-        }
-
-        try {
-            IGrid currentGrid = this.getProxy().getGrid();
-            if (currentGrid == null) {
-                return false;
-            }
-            return this.isTileConnectedToGrid(targetTile, currentGrid);
-        } catch (Exception ignored) {
-        }
-
-        return false;
-    }
-
-    private boolean isTileConnectedToGrid(final TileEntity targetTile, final IGrid expectedGrid) {
-        final IGrid targetGrid = this.getGridForTargetTile(targetTile);
-        return targetGrid != null && targetGrid == expectedGrid;
     }
 
     private IGrid getGridForTargetTile(final TileEntity targetTile) {
@@ -864,3 +838,4 @@ public class PartStorageBus extends PartUpgradeable implements IGridTickable, IC
         return change;
     }
 }
+
