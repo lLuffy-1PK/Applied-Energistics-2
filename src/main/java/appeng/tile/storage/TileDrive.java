@@ -44,10 +44,12 @@ import appeng.tile.inventory.AppEngCellInventory;
 import appeng.util.Platform;
 import appeng.util.inv.InvOperation;
 import appeng.util.inv.filter.IAEItemFilter;
+import appeng.util.inv.WrapperFilteredItemHandler;
 import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.EnumFacing;
 import net.minecraftforge.items.IItemHandler;
 
 import java.io.IOException;
@@ -57,6 +59,17 @@ import java.util.*;
 public class TileDrive extends AENetworkInvTile implements IChestOrDrive, IPriorityHost {
 
     private final AppEngCellInventory inv = new AppEngCellInventory(this, 10);
+    private final IItemHandler externalCellInventory = new WrapperFilteredItemHandler(this.inv, new IAEItemFilter() {
+        @Override
+        public boolean allowExtract(IItemHandler inv, int slot, int amount) {
+            return false;
+        }
+
+        @Override
+        public boolean allowInsert(IItemHandler inv, int slot, ItemStack stack) {
+            return false;
+        }
+    });
     private final ICellHandler[] handlersBySlot = new ICellHandler[10];
     private final DriveWatcher<IAEItemStack>[] invBySlot = new DriveWatcher[10];
     private final IActionSource mySrc;
@@ -206,6 +219,11 @@ public class TileDrive extends AENetworkInvTile implements IChestOrDrive, IPrior
     @Override
     public IItemHandler getInternalInventory() {
         return this.inv;
+    }
+
+    @Override
+    protected IItemHandler getItemHandlerForSide(final EnumFacing facing) {
+        return this.externalCellInventory;
     }
 
     @Override

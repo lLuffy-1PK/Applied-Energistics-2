@@ -57,6 +57,7 @@ import appeng.util.IConfigManagerHost;
 import appeng.util.Platform;
 import appeng.util.helpers.ItemHandlerUtil;
 import appeng.util.inv.InvOperation;
+import appeng.util.inv.WrapperFilteredItemHandler;
 import appeng.util.inv.WrapperChainedItemHandler;
 import appeng.util.inv.filter.IAEItemFilter;
 import appeng.util.item.AEItemStack;
@@ -86,6 +87,17 @@ public class TileChest extends AENetworkPowerTile implements IMEChest, ITerminal
     private final AppEngInternalInventory inputInventory = new AppEngInternalInventory(this, 1);
     private final AppEngInternalInventory cellInventory = new AppEngInternalInventory(this, 1);
     private final IItemHandler internalInventory = new WrapperChainedItemHandler(this.inputInventory, this.cellInventory);
+    private final IItemHandler externalCellInventory = new WrapperFilteredItemHandler(this.cellInventory, new IAEItemFilter() {
+        @Override
+        public boolean allowExtract(IItemHandler inv, int slot, int amount) {
+            return false;
+        }
+
+        @Override
+        public boolean allowInsert(IItemHandler inv, int slot, ItemStack stack) {
+            return false;
+        }
+    });
 
     private final IActionSource mySrc = new MachineSource(this);
     private final IConfigManager config = new ConfigManager(this);
@@ -425,7 +437,7 @@ public class TileChest extends AENetworkPowerTile implements IMEChest, ITerminal
     @Override
     protected IItemHandler getItemHandlerForSide(@Nonnull EnumFacing side) {
         if (side == this.getForward()) {
-            return this.cellInventory;
+            return this.externalCellInventory;
         } else {
             return this.inputInventory;
         }
