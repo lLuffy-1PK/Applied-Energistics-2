@@ -31,30 +31,10 @@ public final class ItemStackPatch {
     public static void patchCountGetSet(ClassNode node) {
         for (MethodNode mn : node.methods) {
             if ("<init>".equals(mn.name)) {
-                ListIterator<AbstractInsnNode> it = mn.instructions.iterator();
-                while (it.hasNext()) {
-                    AbstractInsnNode in = it.next();
-                    if (in instanceof LdcInsnNode && "Count".equals(((LdcInsnNode) in).cst)) {
-                        AbstractInsnNode in2 = it.next();
-                        if (in2.getOpcode() == Opcodes.INVOKEVIRTUAL) {
-                            // :thinking:
-                            boolean patched = false;
-                            MethodInsnNode min2 = (MethodInsnNode) in2;
-                            if (min2.name.equals("getByte")) {
-                                min2.name = "getInteger";
-                                patched = true;
-                            } else if (min2.name.equals("func_74771_c")) {
-                                min2.name = "func_74762_e";
-                                patched = true;
-                            }
-
-                            if (patched) {
-                                min2.desc = "(Ljava/lang/String;)I";
-                                System.out.println("Patched ItemStack Count getter!");
-                            }
-                        }
-                    }
-                }
+                patchCountGet(mn);
+            } else if ("load".equals(mn.name)) {
+                //CatRoom support
+                patchCountGet(mn);
             } else if ("func_77955_b".equals(mn.name) || "writeToNBT".equals(mn.name)) {
                 ListIterator<AbstractInsnNode> it = mn.instructions.iterator();
                 while (it.hasNext()) {
@@ -86,6 +66,33 @@ public final class ItemStackPatch {
                                 it.remove();
                             }
                         }
+                    }
+                }
+            }
+        }
+    }
+
+    private static void patchCountGet(MethodNode mn) {
+        ListIterator<AbstractInsnNode> it = mn.instructions.iterator();
+        while (it.hasNext()) {
+            AbstractInsnNode in = it.next();
+            if (in instanceof LdcInsnNode && "Count".equals(((LdcInsnNode) in).cst)) {
+                AbstractInsnNode in2 = it.next();
+                if (in2.getOpcode() == Opcodes.INVOKEVIRTUAL) {
+                    // :thinking:
+                    boolean patched = false;
+                    MethodInsnNode min2 = (MethodInsnNode) in2;
+                    if (min2.name.equals("getByte")) {
+                        min2.name = "getInteger";
+                        patched = true;
+                    } else if (min2.name.equals("func_74771_c")) {
+                        min2.name = "func_74762_e";
+                        patched = true;
+                    }
+
+                    if (patched) {
+                        min2.desc = "(Ljava/lang/String;)I";
+                        System.out.println("Patched ItemStack Count getter!");
                     }
                 }
             }

@@ -42,6 +42,8 @@ import appeng.util.Platform;
 import appeng.worldgen.MeteoriteWorldGen;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
+import net.minecraft.init.Items;
+import net.minecraft.item.ItemStack;
 import net.minecraft.world.DimensionType;
 import net.minecraft.world.biome.Biome;
 import net.minecraftforge.common.ForgeVersion;
@@ -248,5 +250,22 @@ public final class AppEng {
     @EventHandler
     private void serverStarting(final FMLServerStartingEvent evt) {
         evt.registerServerCommand(new AECommand(evt.getServer()));
+    }
+
+    @EventHandler
+    private void serverStarted(final FMLServerStartedEvent evt) {
+        checkStackCountPatch();
+    }
+
+    public void checkStackCountPatch() {
+        var stack = new ItemStack(Items.APPLE);
+        stack.setCount(200);
+
+        var tag = stack.serializeNBT();
+        var newStack = new ItemStack(tag);
+
+        if (!(stack.isItemEqual(newStack) && stack.getCount() == newStack.getCount())) {
+            AELog.warn("Stack count patch not applied! NBT serialization with Integer stackCount is broken");
+        }
     }
 }
